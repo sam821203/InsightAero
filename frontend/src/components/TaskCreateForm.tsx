@@ -1,0 +1,365 @@
+import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Trash2 } from "lucide-react";
+import DestinationAddressInput from "@/components/DestinationAddressInput";
+import { geocodeAddress } from "@/utils/geocode";
+import type { TaskCreateBody, TaskCreateAssignmentInput } from "@/types/task";
+import { fetchDrones, type DroneResponse } from "@/api/drones";
+
+export interface TaskCreateFormProps {
+  /** 建議起點（可選，例如上一任務終點），用於需要填起點時預填或提示 */
+  effectiveStart: { lat: number; lng: number } | null;
+  onCreate: (body: TaskCreateBody) => Promise<unknown>;
+  onSuccess?: () => void;
+  onAddressError?: () => void;
+  /** 當此值變動時會重新取得無人機列表（任務狀態變更後，可選的「待命」無人機會同步） */
+  refreshTrigger?: string;
+  /** 已被其他進行中任務占用的無人機 ID，這些無人機不顯示於指派選單 */
+  excludeDroneIds?: Set<number>;
+}
+
+function makeAssignment(
+  droneId: number,
+  start: { lat: number; lng: number },
+  dest: { lat: number; lng: number }
+): TaskCreateAssignmentInput {
+  return {
+    drone_id: droneId,
+    start_lat: start.lat,
+    start_lng: start.lng,
+    dest_lat: dest.lat,
+    dest_lng: dest.lng,
+  };
+}
+
+export default function TaskCreateForm({
+  effectiveStart,
+  onCreate,
+  onSuccess,
+  onAddressError,
+  refreshTrigger,
+  excludeDroneIds,
+}: TaskCreateFormProps) {
+  const [drones, setDrones] = useState<DroneResponse[]>([]);
+  const [name, setName] = useState("");
+  const [droneIds, setDroneIds] = useState<number[]>([0]);
+
+  const [startInput, setStartInput] = useState("");
+  const [confirmedStart, setConfirmedStart] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLocatingStart, setIsLocatingStart] = useState(false);
+
+  const [destinationInput, setDestinationInput] = useState("");
+  const [confirmedDestination, setConfirmedDestination] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [isLocatingDestination, setIsLocatingDestination] = useState(false);
+
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchDrones().then(setDrones).catch(() => setDrones([]));
+  }, []);
+
+  useEffect(() => {
+    if (refreshTrigger != null) {
+      fetchDrones().then(setDrones).catch(() => setDrones([]));
+    }
+  }, [refreshTrigger]);
+
+  const idleDrones = drones.filter((d) => d.status === "idle");
+  const exclude = excludeDroneIds ?? new Set<number>();
+  const assignableDrones = idleDrones.filter((d) => !exclude.has(d.id));
+  const validDroneIds = droneIds.filter((id) => id > 0);
+  const needStartInput = validDroneIds.some((id) => {
+    const d = drones.find((dr) => dr.id === id);
+    return d != null && (d.last_lat == null || d.last_lng == null);
+  });
+  /** 終點可填寫條件：已選無人機，且若需起點則起點已填寫 */
+  const destinationEnabled =
+    validDroneIds.length > 0 && (!needStartInput || confirmedStart != null);
+
+  const removeRow = (index: number) =>
+    setDroneIds((prev) => prev.filter((_, i) => i !== index));
+  const updateDroneId = (index: number, id: number) =>
+    setDroneIds((prev) => prev.map((v, i) => (i === index ? id : v)));
+
+  const handleLocateStart = useCallback(async () => {
+    const value = startInput.trim();
+    if (!value) return;
+    setIsLocatingStart(true);
+    try {
+      const coords = await geocodeAddress(value);
+      if (coords) {
+        setConfirmedStart(coords);
+        setStartInput(value);
+      } else {
+        onAddressError?.();
+      }
+    } finally {
+      setIsLocatingStart(false);
+    }
+  }, [startInput, onAddressError]);
+
+  const handleLocateDestination = useCallback(async () => {
+    const value = destinationInput.trim();
+    if (!value) return;
+    setIsLocatingDestination(true);
+    try {
+      const coords = await geocodeAddress(value);
+      if (coords) {
+        setConfirmedDestination(coords);
+        setDestinationInput(value);
+      } else {
+        onAddressError?.();
+      }
+    } finally {
+      setIsLocatingDestination(false);
+    }
+  }, [destinationInput, onAddressError]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (validDroneIds.length === 0) {
+      setError("請至少選擇一台無人機");
+      return;
+    }
+    if (needStartInput && !confirmedStart) {
+      setError("請輸入並定位起點地址（所選無人機中有未執行過任務的需填寫起點）");
+      return;
+    }
+    if (!confirmedDestination) {
+      setError("請輸入並定位終點地址");
+      return;
+    }
+
+    const assignments: TaskCreateAssignmentInput[] = [];
+    for (const drone_id of validDroneIds) {
+      const d = drones.find((dr) => dr.id === drone_id);
+      const start =
+        d != null && d.last_lat != null && d.last_lng != null
+          ? { lat: d.last_lat, lng: d.last_lng }
+          : confirmedStart;
+      if (!start) {
+        setError("起點尚未設定");
+        return;
+      }
+      assignments.push(makeAssignment(drone_id, start, confirmedDestination!));
+    }
+
+    setSubmitting(true);
+    try {
+      const body: TaskCreateBody = { name: name.trim() || undefined, assignments };
+      const result = await onCreate(body);
+      if (result != null) {
+        setName("");
+        setDroneIds([0]);
+        setDestinationInput("");
+        setConfirmedDestination(null);
+        if (needStartInput) {
+          setStartInput("");
+          setConfirmedStart(null);
+        }
+        onSuccess?.();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "建立失敗");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-border bg-card">
+      <div className="border-b border-border px-3 py-2">
+        <span className="font-display text-xs uppercase tracking-widest text-muted-foreground">
+          建立任務
+        </span>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-3 p-2">
+        <div>
+          <label className="text-[11px] text-muted-foreground">任務名稱（選填）</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="例如：上午巡邏"
+            className="mt-0.5 w-full rounded border border-border bg-background px-2 py-1.5 text-xs"
+          />
+        </div>
+
+        {/* 指派無人機（先選，再依所選決定是否需填起點） */}
+        <div className="space-y-2 max-h-[160px] overflow-y-auto">
+          <label className="text-[11px] text-muted-foreground block">指派無人機</label>
+          {droneIds.map((droneId, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-2 text-[11px]"
+            >
+              <select
+                value={droneId || ""}
+                onChange={(e) => updateDroneId(index, Number(e.target.value))}
+                className="flex-1 rounded border border-border bg-background px-2 py-1"
+              >
+                <option value="">選擇無人機</option>
+                {assignableDrones.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+              {droneIds.length > 1 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => removeRow(index)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* 起點：依所選無人機是否有上次終止位置決定是否顯示輸入 */}
+        {validDroneIds.length === 0 ? (
+          <p className="text-[11px] text-muted-foreground">請先選擇至少一台無人機</p>
+        ) : needStartInput ? (
+          <div className="space-y-1.5">
+            <label className="text-[11px] text-muted-foreground">起點地址（必填）</label>
+            <p className="text-[11px] text-muted-foreground">
+              所選無人機中有未執行過任務的，請填寫起點
+            </p>
+            <div className="flex gap-2 items-center">
+              <DestinationAddressInput
+                value={startInput}
+                onChange={(v) => {
+                  setStartInput(v);
+                  setConfirmedStart(null);
+                }}
+                onPlaceSelect={(result) => {
+                  setStartInput(result.formattedAddress);
+                  setConfirmedStart({ lat: result.lat, lng: result.lng });
+                }}
+                placeholder="例如：信義區公所"
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm w-full"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleLocateStart}
+                disabled={isLocatingStart || !startInput.trim()}
+                className="shrink-0 text-xs"
+              >
+                {isLocatingStart ? "定位中…" : "定位"}
+              </Button>
+            </div>
+            {confirmedStart && startInput && (
+              <p className="text-[11px] text-muted-foreground truncate" title={startInput}>
+                起點：{startInput}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-0.5">
+            <span className="text-[11px] text-muted-foreground">起點</span>
+            <p className="text-[11px] text-foreground">各無人機之上次終止位置</p>
+          </div>
+        )}
+
+        {/* 終點地址：須先選無人機且起點（若需要）已填寫後才可填 */}
+        <div className="space-y-1.5">
+          <label className="text-[11px] text-muted-foreground">終點地址（必填）</label>
+          {!destinationEnabled ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex w-full gap-2 items-center cursor-not-allowed">
+                  <DestinationAddressInput
+                    value={destinationInput}
+                    onChange={(v) => {
+                      setDestinationInput(v);
+                      setConfirmedDestination(null);
+                    }}
+                    onPlaceSelect={(result) => {
+                      setDestinationInput(result.formattedAddress);
+                      setConfirmedDestination({ lat: result.lat, lng: result.lng });
+                    }}
+                    placeholder="例如：台北101、信義路一段 1 號"
+                    className="rounded-md border border-input bg-background px-3 py-2 text-sm w-full"
+                    disabled
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled
+                    className="shrink-0 text-xs"
+                  >
+                    定位
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[220px]">
+                Please select a drone and start address first
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <div className="flex gap-2 items-center">
+              <DestinationAddressInput
+                value={destinationInput}
+                onChange={(v) => {
+                  setDestinationInput(v);
+                  setConfirmedDestination(null);
+                }}
+                onPlaceSelect={(result) => {
+                  setDestinationInput(result.formattedAddress);
+                  setConfirmedDestination({ lat: result.lat, lng: result.lng });
+                }}
+                placeholder="例如：台北101、信義路一段 1 號"
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm w-full"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleLocateDestination}
+                disabled={isLocatingDestination || !destinationInput.trim()}
+                className="shrink-0 text-xs"
+              >
+                {isLocatingDestination ? "定位中…" : "定位"}
+              </Button>
+            </div>
+          )}
+          {confirmedDestination && destinationInput && (
+            <p className="text-[11px] text-muted-foreground truncate" title={destinationInput}>
+              終點：{destinationInput}
+            </p>
+          )}
+        </div>
+
+        {error && <p className="text-[11px] text-destructive">{error}</p>}
+        <Button
+          type="submit"
+          size="sm"
+          className="w-full gap-2 text-xs"
+          disabled={
+            submitting ||
+            assignableDrones.length === 0 ||
+            validDroneIds.length === 0 ||
+            !confirmedDestination ||
+            (needStartInput && !confirmedStart)
+          }
+        >
+          {submitting ? "建立中…" : "建立任務"}
+        </Button>
+      </form>
+    </div>
+  );
+}

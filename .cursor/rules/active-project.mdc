@@ -1,0 +1,9 @@
+---
+description: 目前主要開發專案為 InsightAero，修改與討論請以本專案為準
+alwaysApply: true
+---
+
+# 主要專案：InsightAero
+
+- **InsightAero** 是使用者目前正在開發的專案。
+- 當工作區同時包含多個專案時，所有程式修改、檔案編輯、功能實作請以 **InsightAero** 為準，不要改到其他專案（例如 aerosim-dashboard）的檔案，除非使用者明確指定。
