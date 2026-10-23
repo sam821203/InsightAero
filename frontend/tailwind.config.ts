@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Tailwind reads semantic and component tokens only (see src/styles/tokens).
+ * Tailwind reads semantic tokens only (see src/styles/tokens/README.md).
  * Primitive tokens are intentionally not exposed, so a class like
  * `bg-blue-400` cannot bypass the theme.
  *
@@ -30,25 +30,25 @@ export default {
         background: token("color-bg-canvas"),
         foreground: token("color-fg-default"),
         border: token("color-border-default"),
-        input: token("input-border"),
+        input: token("color-border-default"),
         ring: token("color-focus-ring"),
         card: {
           DEFAULT: token("color-bg-surface"),
           foreground: token("color-fg-default"),
         },
         popover: {
-          DEFAULT: token("overlay-bg"),
+          DEFAULT: token("color-bg-surface-raised"),
           foreground: token("color-fg-default"),
         },
         primary: {
-          DEFAULT: token("button-primary-bg"),
-          hover: token("button-primary-bg-hover"),
-          foreground: token("button-primary-fg"),
+          DEFAULT: token("color-accent"),
+          hover: token("color-accent-hover"),
+          foreground: token("color-fg-on-accent"),
         },
         secondary: {
-          DEFAULT: token("button-secondary-bg"),
-          hover: token("button-secondary-bg-hover"),
-          foreground: token("button-secondary-fg"),
+          DEFAULT: token("color-bg-muted"),
+          hover: token("color-border-strong"),
+          foreground: token("color-fg-default"),
         },
         muted: {
           DEFAULT: token("color-bg-muted"),

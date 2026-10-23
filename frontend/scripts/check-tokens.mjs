@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 /**
- * Guards the three-tier token architecture (src/styles/tokens/README.md).
+ * Guards the two-layer token setup (src/styles/tokens/README.md).
  *
  *   1. No hard-coded colors (hex, rgb(), hsl() literals) in TS/TSX.
  *   2. Only semantic.css may reference primitive tokens.
- *   3. semantic.css may only reference primitives; components.css may only
- *      reference semantic tokens.
+ *   3. semantic.css may only reference primitives (or other semantic tokens).
  *
  * Run: npm run lint:tokens
  */
@@ -16,17 +15,18 @@ const ROOT = new URL("..", import.meta.url).pathname;
 const SRC = join(ROOT, "src");
 const TOKENS = join(SRC, "styles/tokens");
 
-/* Google Maps base map styles still use hex; moved to tokens in the map-style PR. */
-const HEX_ALLOWLIST = new Set(["src/components/GoogleMapView.tsx", "src/hooks/useDroneMap.ts"]);
-/* The CSS-to-JS bridge itself builds color strings from token values. */
-HEX_ALLOWLIST.add("src/lib/tokens.ts");
+const HEX_ALLOWLIST = new Set([
+  /* Google Maps base map styles still use hex; moved to tokens in the map-style PR. */
+  "src/components/GoogleMapView.tsx",
+  "src/hooks/useDroneMap.ts",
+  /* The CSS-to-JS bridge itself builds color strings from token values. */
+  "src/lib/tokens.ts",
+]);
 
-const primitiveNames = new Set(
-  [...readFileSync(join(TOKENS, "primitives.css"), "utf8").matchAll(/--([a-z0-9-]+):/g)].map((m) => m[1])
-);
-const semanticNames = new Set(
-  [...readFileSync(join(TOKENS, "semantic.css"), "utf8").matchAll(/--([a-z0-9-]+):/g)].map((m) => m[1])
-);
+const namesIn = (file) =>
+  new Set([...readFileSync(file, "utf8").matchAll(/--([a-z0-9-]+):/g)].map((m) => m[1]));
+const primitiveNames = namesIn(join(TOKENS, "primitives.css"));
+const semanticNames = namesIn(join(TOKENS, "semantic.css"));
 
 const errors = [];
 const report = (file, line, message) => errors.push(`${relative(ROOT, file)}:${line}  ${message}`);
@@ -44,43 +44,37 @@ function eachLine(file, fn) {
     .forEach((text, i) => fn(text, i + 1));
 }
 
-const varRefs = (text) => [...text.matchAll(/var\(--([a-z0-9-]+)\)/g)].map((m) => m[1]);
+/* var(--x), token("x") in tailwind.config.ts, readColorToken("x") in TS */
+const tokenRefs = (text) =>
+  [...text.matchAll(/var\(--([a-z0-9-]+)\)|(?:token|read(?:Color|Hex)Token)\("([a-z0-9-]+)"/g)].map(
+    (m) => m[1] ?? m[2]
+  );
 
-for (const file of walk(SRC)) {
+const consumers = [
+  join(SRC, "index.css"),
+  join(ROOT, "tailwind.config.ts"),
+  ...walk(SRC).filter((file) => /\.(ts|tsx)$/.test(file)),
+];
+
+for (const file of consumers) {
   const rel = relative(ROOT, file);
-  if (/\.(ts|tsx)$/.test(file)) {
-    eachLine(file, (text, line) => {
-      if (!HEX_ALLOWLIST.has(rel) && /["'`]#[0-9a-fA-F]{3,8}\b|\b(rgba?|hsla?)\(\s*\d/.test(text)) {
-        report(file, line, "hard-coded color; use a semantic or component token");
-      }
-      for (const name of varRefs(text)) {
-        if (primitiveNames.has(name)) report(file, line, `primitive token --${name} used outside semantic.css`);
-      }
-    });
-  }
-}
-
-eachLine(join(TOKENS, "semantic.css"), (text, line) => {
-  for (const name of varRefs(text)) {
-    if (!primitiveNames.has(name) && !semanticNames.has(name)) {
-      report(join(TOKENS, "semantic.css"), line, `--${name} is not a primitive`);
-    }
-  }
-});
-
-eachLine(join(TOKENS, "components.css"), (text, line) => {
-  for (const name of varRefs(text)) {
-    if (primitiveNames.has(name)) report(join(TOKENS, "components.css"), line, `component token reads primitive --${name}`);
-  }
-});
-
-for (const file of [join(SRC, "index.css"), join(ROOT, "tailwind.config.ts")]) {
   eachLine(file, (text, line) => {
-    for (const name of [...varRefs(text), ...[...text.matchAll(/token\("([a-z0-9-]+)"\)/g)].map((m) => m[1])]) {
-      if (primitiveNames.has(name)) report(file, line, `primitive token --${name}; reference a semantic token instead`);
+    if (/\.(ts|tsx)$/.test(file) && !HEX_ALLOWLIST.has(rel) && /["'`]#[0-9a-fA-F]{3,8}\b|\b(rgba?|hsla?)\(\s*\d/.test(text)) {
+      report(file, line, "hard-coded color; use a semantic token");
+    }
+    for (const name of tokenRefs(text)) {
+      if (primitiveNames.has(name)) report(file, line, `primitive token --${name}; use a semantic token`);
     }
   });
 }
+
+eachLine(join(TOKENS, "semantic.css"), (text, line) => {
+  for (const name of tokenRefs(text)) {
+    if (!primitiveNames.has(name) && !semanticNames.has(name)) {
+      report(join(TOKENS, "semantic.css"), line, `--${name} is not defined in primitives.css`);
+    }
+  }
+});
 
 if (errors.length > 0) {
   console.error(`Token check failed (${errors.length}):\n` + errors.map((e) => `  ${e}`).join("\n"));

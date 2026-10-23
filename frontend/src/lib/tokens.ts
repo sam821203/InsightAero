@@ -1,8 +1,9 @@
 import type { Theme } from "@/contexts/themeStorage";
 
 /**
- * Read design tokens from CSS so JavaScript-drawn UI (Google Maps polylines,
- * info windows, marker icons) uses the same values as the rest of the app.
+ * Read semantic color tokens from CSS so JavaScript-drawn UI (Google Maps
+ * polylines, info windows, marker icons) uses the same values as the rest of
+ * the app. Pass the name without the leading dashes, e.g. "color-map-waypoint".
  *
  * Values are read from a hidden probe element carrying the requested theme
  * class instead of from <html>. When the theme toggles, child effects run

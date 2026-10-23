@@ -1,6 +1,5 @@
 @import "./styles/tokens/primitives.css";
 @import "./styles/tokens/semantic.css";
-@import "./styles/tokens/components.css";
 
 @tailwind base;
 @tailwind components;
@@ -18,97 +17,13 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    font-size: var(--text-body-size);
-    line-height: var(--line-height-body);
+    @apply bg-background text-foreground font-sans text-sm;
   }
 
   /* Inter's tabular figures + disambiguated zero, applied wherever data is shown */
   .tabular-nums,
   .font-mono {
     font-feature-settings: "tnum" 1, "zero" 1;
-  }
-}
-
-@layer components {
-  .panel {
-    background-color: hsl(var(--panel-bg));
-    border: 1px solid hsl(var(--panel-border));
-    border-radius: var(--panel-radius);
-    box-shadow: var(--elevation-raised);
-  }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.625rem 0.75rem;
-    border-bottom: 1px solid hsl(var(--panel-divider));
-  }
-
-  .panel-title {
-    color: hsl(var(--panel-title-fg));
-    font-size: var(--panel-title-size);
-    font-weight: var(--panel-title-weight);
-    line-height: var(--line-height-heading);
-    letter-spacing: var(--letter-spacing-heading);
-  }
-
-  .field-input {
-    width: 100%;
-    background-color: hsl(var(--input-bg));
-    color: hsl(var(--input-fg));
-    border: 1px solid hsl(var(--input-border));
-    border-radius: var(--input-radius);
-    transition: border-color var(--transition-control), box-shadow var(--transition-control);
-  }
-  .field-input::placeholder {
-    color: hsl(var(--input-placeholder));
-  }
-  .field-input:hover:not(:disabled) {
-    border-color: hsl(var(--input-border-hover));
-  }
-  .field-input:focus-visible {
-    outline: none;
-    border-color: hsl(var(--input-border-focus));
-    box-shadow: 0 0 0 3px hsl(var(--input-border-focus) / 0.25);
-  }
-  .field-input:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-
-  .metric-label {
-    color: hsl(var(--metric-label-fg));
-    font-size: var(--metric-label-size);
-    font-weight: var(--font-weight-label);
-    line-height: var(--line-height-heading);
-  }
-
-  .metric-value {
-    color: hsl(var(--metric-value-fg));
-    font-family: var(--font-data);
-    font-size: var(--metric-value-size);
-    font-weight: var(--metric-value-weight);
-    line-height: var(--line-height-heading);
-    letter-spacing: var(--letter-spacing-heading);
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum" 1, "zero" 1;
-  }
-
-  .metric-unit {
-    color: hsl(var(--metric-unit-fg));
-    font-size: var(--text-label-size);
-    font-weight: var(--font-weight-body);
-  }
-
-  .status-dot {
-    display: inline-block;
-    width: var(--status-dot-size);
-    height: var(--status-dot-size);
-    border-radius: var(--radius-pill);
-    flex-shrink: 0;
   }
 }
 
@@ -132,8 +47,8 @@
     width: 96px;
     height: 96px;
     border-radius: 50%;
-    border: 2px solid hsl(var(--map-marker-selected));
-    background: hsl(var(--map-marker-selected) / 0.12);
+    border: 2px solid hsl(var(--color-accent));
+    background: hsl(var(--color-accent) / 0.12);
     pointer-events: none;
     z-index: 0;
   }

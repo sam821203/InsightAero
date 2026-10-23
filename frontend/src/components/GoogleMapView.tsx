@@ -17,9 +17,9 @@ function buildDroneInfoContent(
   theme: Theme
 ): string {
   const label = id === 0 ? "Drone-1" : `Drone-${id}`;
-  const bg = readColorToken("map-infowindow-bg", theme);
-  const text = readColorToken("map-infowindow-fg", theme);
-  const muted = readColorToken("map-infowindow-muted", theme);
+  const bg = readColorToken("color-map-infowindow-bg", theme);
+  const text = readColorToken("color-map-infowindow-fg", theme);
+  const muted = readColorToken("color-map-infowindow-muted", theme);
   if (!t) {
     return `<div style="padding:8px 12px;min-width:140px;background:${bg};color:${text};font-family:var(--font-ui);font-variant-numeric:tabular-nums;font-size:12px;">${label}<br/><span style="color:${muted}">無即時遙測</span></div>`;
   }
@@ -52,12 +52,12 @@ const DRONE_PATH_WEIGHT = 4;
 /** 地圖 overlay 外層 div 的 class：dark 主題與 active 由 index.css 對子元素 img 套 filter */
 const DRONE_MARKER_DARK_CLASS = "drone-marker--dark";
 
-/** 起點／終點 marker 圖示，顏色取自 --map-waypoint token */
+/** 起點／終點 marker 圖示，顏色取自 --color-map-waypoint token */
 const MAP_MARKER_FLAG_SVG_PATH =
   'M169.28 262.03c153.59 11.89 145.6-75.49 322.72-117.27C366.3 36.78 268.32 110.2 169.28 23.8v-2.79c0-11.6-9.41-21.01-21.01-21.01-11.6 0-21.01 9.41-21.01 21.01V399.3c0 11.6 9.41 21.01 21.01 21.01 11.6 0 21.01-9.41 21.01-21.01V262.03zm41.08 60.37c22.35 2.82 44.63 13.66 60.84 30 15.78 15.92 26.09 37 26.09 61.29 0 15.75-5.76 31.07-16.31 44.8-9.42 12.25-22.83 23.3-39.35 32.09-12.77 6.79-27.59 12.33-44.01 16.08-15.36 3.51-31.94 5.48-49.35 5.48-16.23 0-31.74-1.71-46.19-4.77-15.48-3.28-29.54-8.11-41.83-14.05C34 480.61 17.13 463.58 8.11 445.17c-7.83-15.99-9.77-32.84-6.77-48.96 2.88-15.55 10.38-30.1 21.55-42.15 14.79-15.94 36.28-27.68 62-31.31l4.07 37.3c-18.14 2.57-32.95 10.48-42.84 21.14-6.31 6.81-10.49 14.65-11.98 22.69-1.38 7.47-.41 15.43 3.37 23.15 5.59 11.42 17.15 22.52 35.99 31.64 10.26 4.96 21.95 8.98 34.75 11.7 12.19 2.58 25.61 4.02 40.02 4.02 15.47 0 29.79-1.65 42.66-4.6 13.63-3.11 25.89-7.68 36.4-13.27 12.28-6.53 21.92-14.33 28.32-22.66 5.2-6.77 8.04-13.69 8.04-20.17 0-12.74-5.85-24.24-14.8-33.27-11.06-11.15-26.52-18.58-42.2-20.56l3.67-37.46z';
 
 function getOriginDestIconUrl(theme: Theme): string {
-  const fill = readHexToken("map-waypoint", theme);
+  const fill = readHexToken("color-map-waypoint", theme);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision" fill-rule="evenodd" clip-rule="evenodd" viewBox="0 0 492 512.14"><path fill="${fill}" d="${MAP_MARKER_FLAG_SVG_PATH}"/></svg>`;
   return "data:image/svg+xml," + encodeURIComponent(svg);
 }
@@ -440,7 +440,7 @@ export default function GoogleMapView({
     if (!map) return;
 
     telemetryByDroneRef.current = telemetryByDrone;
-    const pathColor = readColorToken("map-route-active", theme);
+    const pathColor = readColorToken("color-map-route-active", theme);
 
     for (const id of Object.keys(overlaysRef.current).map(Number)) {
       const shouldRemove = !droneIds.includes(id);
@@ -546,7 +546,7 @@ export default function GoogleMapView({
       historyPolylineRef.current = null;
       return;
     }
-    const strokeColor = readColorToken("map-route-history", theme);
+    const strokeColor = readColorToken("color-map-route-history", theme);
     if (!historyPolylineRef.current) {
       historyPolylineRef.current = new google.maps.Polyline({
         path: historyPath.map((p) => ({ lat: p.lat, lng: p.lng })),
@@ -664,7 +664,7 @@ export default function GoogleMapView({
           { lat: a.dest_lat, lng: a.dest_lng },
         ],
         geodesic: true,
-        strokeColor: readColorToken("map-route-planned", theme),
+        strokeColor: readColorToken("color-map-route-planned", theme),
         strokeOpacity: 0.5,
         strokeWeight: 2,
         map,
@@ -678,7 +678,7 @@ export default function GoogleMapView({
     if (map) {
       telemetryByDroneRef.current = telemetryByDrone;
       const legacyT = telemetryByDrone[0];
-      const pathColor = readColorToken("map-route-active", themeRef.current);
+      const pathColor = readColorToken("color-map-route-active", themeRef.current);
       if (overlaysRef.current[0] === undefined) {
         expectedDroneCountRef.current = 1;
         mountedCountRef.current = 0;
@@ -740,7 +740,7 @@ export default function GoogleMapView({
   const hasKey = Boolean(import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
   if (!hasKey) {
     return (
-      <div className="flex w-full h-full items-center justify-center panel text-muted-foreground text-sm">
+      <div className="flex w-full h-full items-center justify-center rounded-lg border border-border bg-card shadow-raised text-muted-foreground text-sm">
         請設定 VITE_GOOGLE_MAPS_API_KEY 以顯示地圖
       </div>
     );

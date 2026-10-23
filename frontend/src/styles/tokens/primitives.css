@@ -1,11 +1,14 @@
 /*
- * Tier 1 — Primitive tokens
+ * Layer 1 — Primitive tokens
  *
  * The raw palette and scales. They describe what a value IS, never where it
  * is used, and they do not change between themes.
  *
  * Rule: components and Tailwind classes never reference this file directly.
  * Only semantic.css may read from it.
+ *
+ * Type sizes and spacing are not defined here: Tailwind's default scale
+ * (text-xs, text-sm, p-3, ...) already plays that role.
  *
  * Colors are stored as bare HSL channels ("H S% L%") so Tailwind can apply
  * opacity modifiers, e.g. bg-surface/80 -> hsl(var(--x) / 0.8).
@@ -92,34 +95,11 @@
   --font-family-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace,
     "SFMono-Regular", Menlo, Consolas, monospace;
 
-  --font-size-100: 0.6875rem; /* 11px */
-  --font-size-200: 0.75rem; /* 12px */
-  --font-size-300: 0.8125rem; /* 13px */
-  --font-size-400: 0.875rem; /* 14px */
-  --font-size-500: 1rem; /* 16px */
-  --font-size-600: 1.25rem; /* 20px */
-  --font-size-700: 1.5rem; /* 24px */
-  --font-size-800: 2rem; /* 32px */
-
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-
-  --line-height-tight: 1.2;
-  --line-height-snug: 1.35;
-  --line-height-normal: 1.5;
-
-  --letter-spacing-tight: -0.01em;
-  --letter-spacing-normal: 0;
-  --letter-spacing-wide: 0.02em;
-
   /* Shape */
   --radius-100: 4px;
   --radius-200: 6px;
   --radius-300: 8px;
   --radius-400: 12px;
-  --radius-full: 9999px;
 
   /* Elevation: neutral shadows only, no colored glows */
   --shadow-100: 0 1px 2px 0 hsl(220 30% 4% / 0.06);

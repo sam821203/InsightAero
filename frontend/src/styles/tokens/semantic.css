@@ -1,9 +1,13 @@
 /*
- * Tier 2 — Semantic tokens
+ * Layer 2 — Semantic tokens
  *
  * Name a value by its ROLE ("muted text", "danger", "surface"), not by what it
  * looks like. Themes are implemented here and only here: the dark and light
  * blocks below map the same role names onto different primitives.
+ *
+ * Tailwind (tailwind.config.ts) and JS (src/lib/tokens.ts) read this layer.
+ * Per-component styling lives in the component files as Tailwind classes and
+ * cva variants, not as extra CSS variables.
  *
  * Rules
  * - Values may only reference primitives (var(--gray-*), var(--blue-*), ...).
@@ -78,6 +82,15 @@
   --color-info-subtle: var(--blue-950);
   --color-info-border: var(--blue-800);
 
+  /* Map overlays, drawn by Google Maps from JS */
+  --color-map-route-active: var(--blue-400);
+  --color-map-route-history: var(--gray-500);
+  --color-map-route-planned: var(--gray-400);
+  --color-map-waypoint: var(--red-600);
+  --color-map-infowindow-bg: var(--gray-850);
+  --color-map-infowindow-fg: var(--gray-50);
+  --color-map-infowindow-muted: var(--gray-400);
+
   /* Elevation: dark surfaces need heavier shadows to read */
   --elevation-raised: var(--shadow-200);
   --elevation-overlay: var(--shadow-400);
@@ -135,42 +148,30 @@
   --color-info-subtle: var(--blue-50);
   --color-info-border: var(--blue-200);
 
+  --color-map-route-active: var(--blue-600);
+  --color-map-route-history: var(--gray-500);
+  --color-map-route-planned: var(--gray-600);
+  --color-map-waypoint: var(--red-600);
+  --color-map-infowindow-bg: var(--gray-0);
+  --color-map-infowindow-fg: var(--gray-950);
+  --color-map-infowindow-muted: var(--gray-600);
+
   --elevation-raised: var(--shadow-100);
   --elevation-overlay: var(--shadow-300);
 }
 
-/* Theme-independent semantic roles */
+/* Theme-independent semantic roles.
+ * Font sizes, weights and spacing use Tailwind's built-in scale directly. */
 :root {
-  /* Typography roles */
   --font-ui: var(--font-family-sans);
-  --font-data: var(--font-family-sans); /* always paired with tabular-nums */
   --font-code: var(--font-family-mono); /* coordinates, timestamps, IDs */
 
-  --text-caption-size: var(--font-size-100);
-  --text-label-size: var(--font-size-200);
-  --text-body-sm-size: var(--font-size-300);
-  --text-body-size: var(--font-size-400);
-  --text-title-size: var(--font-size-500);
-  --text-metric-size: var(--font-size-700);
-
-  --font-weight-body: var(--font-weight-regular);
-  --font-weight-label: var(--font-weight-medium);
-  --font-weight-emphasis: var(--font-weight-semibold);
-
-  --line-height-heading: var(--line-height-tight);
-  --line-height-body: var(--line-height-normal);
-  --letter-spacing-heading: var(--letter-spacing-tight);
-
-  /* Shape roles */
   --radius-inline: var(--radius-100);
   --radius-control: var(--radius-200);
   --radius-container: var(--radius-300);
   --radius-overlay: var(--radius-400);
-  --radius-pill: var(--radius-full);
 
-  /* Motion roles */
   --motion-duration-fast: var(--duration-100);
   --motion-duration-base: var(--duration-200);
   --motion-ease: var(--ease-standard);
-  --transition-control: var(--motion-duration-base) var(--motion-ease);
 }
