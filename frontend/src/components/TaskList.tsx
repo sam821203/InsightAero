@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Rocket, Square, Pause, Play, Trash2 } from "lucide-react";
 import type { TaskItem, TaskStatus, AssignmentStatus } from "@/types/task";
+import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 
 const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
   pending: "待命中",
@@ -86,12 +87,10 @@ export default function TaskList({
   };
 
   return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">
-          任務列表
-        </span>
-      </div>
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>任務列表</PanelTitle>
+      </PanelHeader>
       <ScrollArea className="h-[240px]">
         {tasks.length === 0 ? (
           <div className="p-3 text-xs text-muted-foreground">尚無任務</div>
@@ -216,6 +215,6 @@ export default function TaskList({
           </ul>
         )}
       </ScrollArea>
-    </div>
+    </Panel>
   );
 }

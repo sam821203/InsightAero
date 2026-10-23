@@ -20,6 +20,8 @@ import {
   type DroneResponse,
 } from "@/api/drones";
 import type { ApiError } from "@/api/client";
+import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
+import { Input } from "@/components/ui/input";
 
 interface MyDronesListProps {
   /** 當此值變動時會重新取得無人機列表（例如任務開始/取消/完成後，管理區塊的「待命/飛行中」會同步） */
@@ -130,11 +132,9 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
   };
 
   return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">
-          管理無人機
-        </span>
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>管理無人機</PanelTitle>
         <Button
           type="button"
           variant="ghost"
@@ -145,15 +145,16 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
           <Plus className="h-3 w-3" />
           新增
         </Button>
-      </div>
+      </PanelHeader>
       {showAddForm && (
         <div className="flex gap-2 border-b border-border-subtle p-2">
-          <input
+          <Input
+            size="sm"
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="無人機名稱"
-            className="field-input flex-1 px-2 py-1.5 text-xs"
+            className="flex-1"
             maxLength={128}
           />
           <Button
@@ -195,22 +196,24 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
               >
                 {editingId === d.id ? (
                   <>
-                    <input
+                    <Input
+                      size="sm"
                       type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       placeholder="名稱"
-                      className="field-input min-w-0 flex-1 px-2 py-1"
+                      className="min-w-0 flex-1"
                       maxLength={128}
                     />
-                    <input
+                    <Input
+                      size="sm"
                       type="number"
                       min={1}
                       step={10}
                       value={editSpeed}
                       onChange={(e) => setEditSpeed(e.target.value)}
                       placeholder="速度"
-                      className="field-input !w-16 px-2 py-1 tabular-nums"
+                      className="w-16 tabular-nums"
                     />
                     <Button
                       type="button"
@@ -303,6 +306,6 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Panel>
   );
 }

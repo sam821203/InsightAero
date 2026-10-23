@@ -6,6 +6,7 @@ import {
   fetchSessionTelemetry,
   type FlightSessionItem,
 } from "@/api/flightSessions";
+import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 
 interface Props {
   onSelectSession: (sessionId: number, path: FlightPathPoint[]) => void;
@@ -48,10 +49,10 @@ export default function FlightSessionsList({ onSelectSession }: Props) {
   };
 
   return (
-    <div className="panel">
-      <div className="panel-header panel-title">
-        飛行場次
-      </div>
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>飛行場次</PanelTitle>
+      </PanelHeader>
       <ScrollArea className="h-[200px]">
         {loading ? (
           <div className="p-3 text-xs text-muted-foreground">載入中…</div>
@@ -80,6 +81,6 @@ export default function FlightSessionsList({ onSelectSession }: Props) {
           </ul>
         )}
       </ScrollArea>
-    </div>
+    </Panel>
   );
 }

@@ -6,6 +6,8 @@ import DestinationAddressInput from "@/components/DestinationAddressInput";
 import { geocodeAddress } from "@/utils/geocode";
 import type { TaskCreateBody, TaskCreateAssignmentInput } from "@/types/task";
 import { fetchDrones, type DroneResponse } from "@/api/drones";
+import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
+import { Input, NativeSelect } from "@/components/ui/input";
 
 export interface TaskCreateFormProps {
   /** 建議起點（可選，例如上一任務終點），用於需要填起點時預填或提示 */
@@ -174,21 +176,20 @@ export default function TaskCreateForm({
   };
 
   return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">
-          建立任務
-        </span>
-      </div>
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>建立任務</PanelTitle>
+      </PanelHeader>
       <form onSubmit={handleSubmit} className="space-y-3 p-2">
         <div>
           <label className="text-[11px] text-muted-foreground">任務名稱（選填）</label>
-          <input
+          <Input
+            size="sm"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="例如：上午巡邏"
-            className="field-input mt-0.5 px-2 py-1.5 text-xs"
+            className="mt-0.5"
           />
         </div>
 
@@ -200,10 +201,11 @@ export default function TaskCreateForm({
               key={index}
               className="flex items-center gap-2 text-[11px]"
             >
-              <select
+              <NativeSelect
                 value={droneId || ""}
                 onChange={(e) => updateDroneId(index, Number(e.target.value))}
-                className="field-input flex-1 px-2 py-1"
+                size="sm"
+                className="flex-1"
               >
                 <option value="">選擇無人機</option>
                 {assignableDrones.map((d) => (
@@ -211,7 +213,7 @@ export default function TaskCreateForm({
                     {d.name}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
               {droneIds.length > 1 && (
                 <Button
                   type="button"
@@ -248,7 +250,6 @@ export default function TaskCreateForm({
                   setConfirmedStart({ lat: result.lat, lng: result.lng });
                 }}
                 placeholder="例如：信義區公所"
-                className="field-input px-3 py-2 text-sm"
               />
               <Button
                 type="button"
@@ -292,7 +293,6 @@ export default function TaskCreateForm({
                       setConfirmedDestination({ lat: result.lat, lng: result.lng });
                     }}
                     placeholder="例如：台北101、信義路一段 1 號"
-                    className="field-input px-3 py-2 text-sm"
                     disabled
                   />
                   <Button
@@ -323,7 +323,6 @@ export default function TaskCreateForm({
                   setConfirmedDestination({ lat: result.lat, lng: result.lng });
                 }}
                 placeholder="例如：台北101、信義路一段 1 號"
-                className="field-input px-3 py-2 text-sm"
               />
               <Button
                 type="button"
@@ -360,6 +359,6 @@ export default function TaskCreateForm({
           {submitting ? "建立中…" : "建立任務"}
         </Button>
       </form>
-    </div>
+    </Panel>
   );
 }

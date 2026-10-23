@@ -1,5 +1,6 @@
 import type { TelemetryPacket } from "@/types/telemetry";
 import { Wind, Navigation } from "lucide-react";
+import { Panel, PanelTitle } from "@/components/ui/panel";
 
 interface Props {
   /** 顯示即時氣象（來自 OpenWeather / 後端推播） */
@@ -20,8 +21,8 @@ export default function WeatherControls({
   const isTailwind = effectiveSpeedMmin != null && baseSpeedMmin != null && effectiveSpeedMmin > baseSpeedMmin * 1.05;
 
   return (
-    <div className="panel flex min-w-[220px] flex-col gap-4 p-4">
-      <h3 className="panel-title">即時氣象</h3>
+    <Panel className="flex min-w-[220px] flex-col gap-4 p-4">
+      <PanelTitle>即時氣象</PanelTitle>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -52,6 +53,6 @@ export default function WeatherControls({
           {isTailwind && "順風，有效分速提升"}
         </p>
       )}
-    </div>
+    </Panel>
   );
 }

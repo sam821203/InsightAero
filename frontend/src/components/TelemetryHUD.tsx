@@ -1,6 +1,11 @@
 import { memo } from "react";
 import type { TelemetryPacket } from "@/types/telemetry";
 import { Activity, Compass, Gauge, MapPin, Mountain, Zap } from "lucide-react";
+import { Panel } from "@/components/ui/panel";
+
+const LABEL = "text-xs font-medium leading-tight text-muted-foreground";
+const VALUE = "text-2xl font-semibold leading-tight tracking-tight tabular-nums";
+const UNIT = "min-h-[14px] text-xs leading-tight text-subtle-foreground";
 
 interface Props {
   telemetry: TelemetryPacket;
@@ -40,12 +45,12 @@ function GaugeCard({
   unit: string;
 }) {
   return (
-    <div className="panel flex h-[116px] min-w-[120px] flex-col items-center justify-center gap-1 p-3">
+    <Panel className="flex h-[116px] min-w-[120px] flex-col items-center justify-center gap-1 p-3">
       <Icon className="h-4 w-4 shrink-0 text-subtle-foreground" />
-      <span className="metric-label">{label}</span>
-      <span className="metric-value">{value}</span>
-      <span className="metric-unit min-h-[14px] leading-tight">{unit}</span>
-    </div>
+      <span className={LABEL}>{label}</span>
+      <span className={`${VALUE} text-foreground`}>{value}</span>
+      <span className={UNIT}>{unit}</span>
+    </Panel>
   );
 }
 
@@ -57,9 +62,9 @@ function TelemetryHUDInner({ telemetry, activeDroneLabel }: Props) {
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-end gap-3">
       {activeDroneLabel != null && activeDroneLabel !== "" && (
-        <div className="flex h-[116px] min-w-[140px] flex-col items-center justify-center gap-1.5 rounded-lg border border-[hsl(var(--metric-selected-border))] bg-[hsl(var(--metric-selected-bg))] p-3">
+        <div className="flex h-[116px] min-w-[140px] flex-col items-center justify-center gap-1.5 rounded-lg border border-interactive bg-surface-selected p-3">
           <MapPin className="h-5 w-5 shrink-0 text-interactive-text" />
-          <span className="metric-label">目前機體</span>
+          <span className={LABEL}>目前機體</span>
           <span className="text-lg font-semibold leading-tight tracking-tight text-foreground text-center break-words">
             {activeDroneLabel}
           </span>
@@ -74,10 +79,10 @@ function TelemetryHUDInner({ telemetry, activeDroneLabel }: Props) {
         value={telemetry.effective_speed_m_min}
         unit="m/min"
       />
-      <div className="panel flex h-[116px] min-w-[140px] flex-col items-center justify-center gap-1 p-3">
+      <Panel className="flex h-[116px] min-w-[140px] flex-col items-center justify-center gap-1 p-3">
         <Zap className={`h-4 w-4 shrink-0 ${level === "nominal" ? "text-subtle-foreground" : LEVEL_TEXT[level]}`} />
-        <span className="metric-label">Battery</span>
-        <span className={`metric-value ${LEVEL_TEXT[level]}`}>{batteryPct.toFixed(1)}%</span>
+        <span className={LABEL}>Battery</span>
+        <span className={`${VALUE} ${LEVEL_TEXT[level]}`}>{batteryPct.toFixed(1)}%</span>
         <div className="flex min-h-[14px] w-full items-center">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
@@ -86,7 +91,7 @@ function TelemetryHUDInner({ telemetry, activeDroneLabel }: Props) {
             />
           </div>
         </div>
-      </div>
+      </Panel>
       </div>
     </div>
   );

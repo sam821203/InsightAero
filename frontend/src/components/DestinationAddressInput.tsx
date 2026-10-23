@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { loadGoogleMaps } from "@/utils/geocode";
 import { importLibrary } from "@googlemaps/js-api-loader";
+import { Input } from "@/components/ui/input";
 
 export interface PlaceResult {
   lat: number;
@@ -132,7 +133,7 @@ export default function DestinationAddressInput({
 
   return (
     <div ref={wrapperRef} className="relative flex-1 min-w-0">
-      <input
+      <Input
         id={id}
         type="text"
         value={value}

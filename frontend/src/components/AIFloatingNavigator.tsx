@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Bot, BrainCircuit, X } from "lucide-react";
 import type { TelemetryPacket } from "@/types/telemetry";
 import AIDiagnosticPanel from "@/components/AIDiagnosticPanel";
+import { PanelTitle } from "@/components/ui/panel";
 
 interface Props {
   telemetry: TelemetryPacket;
@@ -26,9 +27,7 @@ export default function AIFloatingNavigator({ telemetry, isRunning, canGetDiagno
           <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2.5">
             <div className="flex items-center gap-2">
               <BrainCircuit className="h-4 w-4 shrink-0 text-subtle-foreground" />
-              <h2 className="panel-title">
-                AI 導航員
-              </h2>
+              <PanelTitle as="h2">AI 導航員</PanelTitle>
             </div>
             <button
               type="button"

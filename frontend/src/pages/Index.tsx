@@ -299,7 +299,7 @@ export default function Index() {
                   onAllDroneMarkersMounted={handleAllDroneMarkersMounted}
                 />
               ) : (
-                <div className="flex min-h-[280px] w-full flex-1 items-center justify-center panel text-muted-foreground text-sm">
+                <div className="flex min-h-[280px] w-full flex-1 items-center justify-center rounded-lg border border-border bg-card shadow-raised text-muted-foreground text-sm">
                   取得定位中…
                 </div>
               )}
