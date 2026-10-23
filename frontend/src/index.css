@@ -1,131 +1,124 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+@import "./styles/tokens/primitives.css";
+@import "./styles/tokens/semantic.css";
+@import "./styles/tokens/components.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* Light theme (default when .dark is not set) */
-  :root {
-    --background: 0 0% 98%;
-    --foreground: 220 20% 12%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 12%;
-
-    --primary: 185 100% 42%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 20% 20%;
-
-    --muted: 220 14% 92%;
-    --muted-foreground: 220 10% 42%;
-
-    /* 與 primary 同色；hover 淡色由 tailwind.config 的 accent.DEFAULT = primary/0.1 控制 */
-    --accent: 185 100% 42%;
-    --accent-foreground: 220 20% 12%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 20% 7%;
-
-    --border: 220 13% 88%;
-    --input: 220 13% 88%;
-    --ring: 185 100% 42%;
-
-    --radius: 0.5rem;
-
-    --grid-line: 220 13% 88%;
-    --glow-cyan: 0 0 20px hsl(185 100% 42% / 0.25);
-    --glow-green: 0 0 20px hsl(142 70% 38% / 0.25);
-    --glow-amber: 0 0 20px hsl(38 92% 50% / 0.25);
-  }
-
-  /* Dark theme (default for app) */
-  .dark {
-    --background: 220 20% 7%;
-    --foreground: 190 100% 90%;
-
-    --card: 220 20% 10%;
-    --card-foreground: 190 100% 90%;
-
-    --primary: 185 100% 50%;
-    --primary-foreground: 220 20% 7%;
-
-    --secondary: 220 20% 15%;
-    --secondary-foreground: 190 100% 80%;
-
-    --muted: 220 15% 18%;
-    --muted-foreground: 210 20% 55%;
-
-    /* 與 primary 同色 */
-    --accent: 185 100% 50%;
-    --accent-foreground: 190 100% 90%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
-
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 20% 7%;
-
-    --border: 200 40% 20%;
-    --input: 200 40% 20%;
-    --ring: 185 100% 50%;
-
-    --grid-line: 200 40% 20%;
-    --glow-cyan: 0 0 20px hsl(185 100% 50% / 0.3);
-    --glow-green: 0 0 20px hsl(142 70% 45% / 0.3);
-    --glow-amber: 0 0 20px hsl(38 92% 50% / 0.3);
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
-    @apply bg-background text-foreground;
-    font-family: 'JetBrains Mono', monospace;
+    @apply bg-background text-foreground font-sans;
+    font-size: var(--text-body-size);
+    line-height: var(--line-height-body);
+  }
+
+  /* Inter's tabular figures + disambiguated zero, applied wherever data is shown */
+  .tabular-nums,
+  .font-mono {
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+}
+
+@layer components {
+  .panel {
+    background-color: hsl(var(--panel-bg));
+    border: 1px solid hsl(var(--panel-border));
+    border-radius: var(--panel-radius);
+    box-shadow: var(--elevation-raised);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid hsl(var(--panel-divider));
+  }
+
+  .panel-title {
+    color: hsl(var(--panel-title-fg));
+    font-size: var(--panel-title-size);
+    font-weight: var(--panel-title-weight);
+    line-height: var(--line-height-heading);
+    letter-spacing: var(--letter-spacing-heading);
+  }
+
+  .field-input {
+    width: 100%;
+    background-color: hsl(var(--input-bg));
+    color: hsl(var(--input-fg));
+    border: 1px solid hsl(var(--input-border));
+    border-radius: var(--input-radius);
+    transition: border-color var(--transition-control), box-shadow var(--transition-control);
+  }
+  .field-input::placeholder {
+    color: hsl(var(--input-placeholder));
+  }
+  .field-input:hover:not(:disabled) {
+    border-color: hsl(var(--input-border-hover));
+  }
+  .field-input:focus-visible {
+    outline: none;
+    border-color: hsl(var(--input-border-focus));
+    box-shadow: 0 0 0 3px hsl(var(--input-border-focus) / 0.25);
+  }
+  .field-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .metric-label {
+    color: hsl(var(--metric-label-fg));
+    font-size: var(--metric-label-size);
+    font-weight: var(--font-weight-label);
+    line-height: var(--line-height-heading);
+  }
+
+  .metric-value {
+    color: hsl(var(--metric-value-fg));
+    font-family: var(--font-data);
+    font-size: var(--metric-value-size);
+    font-weight: var(--metric-value-weight);
+    line-height: var(--line-height-heading);
+    letter-spacing: var(--letter-spacing-heading);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "zero" 1;
+  }
+
+  .metric-unit {
+    color: hsl(var(--metric-unit-fg));
+    font-size: var(--text-label-size);
+    font-weight: var(--font-weight-body);
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: var(--status-dot-size);
+    height: var(--status-dot-size);
+    border-radius: var(--radius-pill);
+    flex-shrink: 0;
   }
 }
 
 @layer utilities {
-  .font-display {
-    font-family: 'Orbitron', sans-serif;
-  }
-
-  .font-mono-tight {
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .glow-cyan {
-    box-shadow: var(--glow-cyan);
-  }
-
-  .glow-green {
-    box-shadow: var(--glow-green);
-  }
-
-  .glow-amber {
-    box-shadow: var(--glow-amber);
-  }
-
-  .grid-bg {
-    background-image:
-      linear-gradient(hsl(var(--grid-line) / 0.3) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--grid-line) / 0.3) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
-  /* 地圖無人機 overlay：dark 主題時圖示變色 */
+  /* Google Maps drone overlay: the dark theme recolors the SVG icon */
   .drone-marker--dark img {
     filter: hue-rotate(160deg) saturate(1.1) brightness(1.1);
   }
-  /* 地圖無人機 overlay：被選中時主色圈圈 + 中間主色透明 + 圖示光暈，並置頂以正確接收點擊 */
+
+  /* Selected drone: a quiet accent ring, no glow */
   .drone-marker--active {
     position: relative;
     z-index: 1;
@@ -136,38 +129,16 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 100px;
-    height: 100px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
-    border: 1.5px solid hsl(var(--primary));
-    background: hsl(var(--primary) / 0.18);
+    border: 2px solid hsl(var(--map-marker-selected));
+    background: hsl(var(--map-marker-selected) / 0.12);
     pointer-events: none;
     z-index: 0;
   }
   .drone-marker--active img {
     position: relative;
     z-index: 1;
-    filter: drop-shadow(0 0 20px 8px hsl(var(--primary) / 0.75));
   }
-  .drone-marker--dark.drone-marker--active img {
-    filter: hue-rotate(160deg) saturate(1.1) brightness(1.1) drop-shadow(0 0 20px 8px hsl(var(--primary) / 0.75));
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; box-shadow: 0 0 8px hsl(var(--primary) / 0.6); }
-  50% { opacity: 0.5; box-shadow: 0 0 16px hsl(var(--primary) / 0.9); }
-}
-
-@keyframes typing-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-.animate-heartbeat {
-  animation: pulse-glow 1.5s ease-in-out infinite;
-}
-
-.animate-cursor {
-  animation: typing-cursor 0.8s step-end infinite;
 }

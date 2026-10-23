@@ -1,0 +1,176 @@
+/*
+ * Tier 2 — Semantic tokens
+ *
+ * Name a value by its ROLE ("muted text", "danger", "surface"), not by what it
+ * looks like. Themes are implemented here and only here: the dark and light
+ * blocks below map the same role names onto different primitives.
+ *
+ * Rules
+ * - Values may only reference primitives (var(--gray-*), var(--blue-*), ...).
+ * - The accent color means "interactive or selected". Never use it to decorate
+ *   data, headings or icons.
+ * - Status colors carry meaning: success = nominal, warning = needs attention,
+ *   danger = critical or destructive, info = neutral notice.
+ * - Each status has four roles:
+ *     solid    indicator fills: dots, bars, solid buttons
+ *     on-solid text/icons placed on top of solid
+ *     text     status-colored text on a normal surface (meets AA contrast)
+ *     subtle   tinted background behind status content
+ *     border   outline for tinted status content
+ */
+
+/* Dark is the default theme for this app. */
+:root,
+.dark {
+  color-scheme: dark;
+
+  /* Backgrounds, from back to front */
+  --color-bg-canvas: var(--gray-950);
+  --color-bg-surface: var(--gray-900);
+  --color-bg-surface-raised: var(--gray-850);
+  --color-bg-sunken: var(--gray-1000);
+  --color-bg-muted: var(--gray-800);
+  --color-bg-hover: var(--gray-800);
+  --color-bg-selected: var(--blue-950);
+  --color-bg-backdrop: var(--gray-1000);
+
+  /* Foreground */
+  --color-fg-default: var(--gray-50);
+  --color-fg-muted: var(--gray-400);
+  --color-fg-subtle: var(--gray-500);
+  --color-fg-disabled: var(--gray-600);
+  --color-fg-on-accent: var(--gray-1000);
+
+  /* Borders */
+  --color-border-subtle: var(--gray-850);
+  --color-border-default: var(--gray-750);
+  --color-border-strong: var(--gray-600);
+
+  /* Interactive accent */
+  --color-accent: var(--blue-400);
+  --color-accent-hover: var(--blue-300);
+  --color-accent-text: var(--blue-300);
+  --color-accent-subtle: var(--blue-950);
+  --color-focus-ring: var(--blue-400);
+
+  /* Status */
+  --color-success-solid: var(--green-400);
+  --color-success-on-solid: var(--gray-1000);
+  --color-success-text: var(--green-300);
+  --color-success-subtle: var(--green-950);
+  --color-success-border: var(--green-800);
+
+  --color-warning-solid: var(--amber-400);
+  --color-warning-on-solid: var(--gray-1000);
+  --color-warning-text: var(--amber-300);
+  --color-warning-subtle: var(--amber-950);
+  --color-warning-border: var(--amber-800);
+
+  --color-danger-solid: var(--red-600);
+  --color-danger-on-solid: var(--gray-0);
+  --color-danger-text: var(--red-300);
+  --color-danger-subtle: var(--red-950);
+  --color-danger-border: var(--red-800);
+
+  --color-info-solid: var(--blue-400);
+  --color-info-on-solid: var(--gray-1000);
+  --color-info-text: var(--blue-300);
+  --color-info-subtle: var(--blue-950);
+  --color-info-border: var(--blue-800);
+
+  /* Elevation: dark surfaces need heavier shadows to read */
+  --elevation-raised: var(--shadow-200);
+  --elevation-overlay: var(--shadow-400);
+}
+
+.light {
+  color-scheme: light;
+
+  --color-bg-canvas: var(--gray-50);
+  --color-bg-surface: var(--gray-0);
+  --color-bg-surface-raised: var(--gray-0);
+  --color-bg-sunken: var(--gray-25);
+  --color-bg-muted: var(--gray-100);
+  --color-bg-hover: var(--gray-100);
+  --color-bg-selected: var(--blue-50);
+  --color-bg-backdrop: var(--gray-950);
+
+  --color-fg-default: var(--gray-950);
+  --color-fg-muted: var(--gray-600);
+  --color-fg-subtle: var(--gray-500);
+  --color-fg-disabled: var(--gray-400);
+  --color-fg-on-accent: var(--gray-0);
+
+  --color-border-subtle: var(--gray-100);
+  --color-border-default: var(--gray-200);
+  --color-border-strong: var(--gray-300);
+
+  --color-accent: var(--blue-600);
+  --color-accent-hover: var(--blue-700);
+  --color-accent-text: var(--blue-700);
+  --color-accent-subtle: var(--blue-50);
+  --color-focus-ring: var(--blue-500);
+
+  --color-success-solid: var(--green-600);
+  --color-success-on-solid: var(--gray-0);
+  --color-success-text: var(--green-700);
+  --color-success-subtle: var(--green-50);
+  --color-success-border: var(--green-200);
+
+  --color-warning-solid: var(--amber-400);
+  --color-warning-on-solid: var(--gray-1000);
+  --color-warning-text: var(--amber-700);
+  --color-warning-subtle: var(--amber-50);
+  --color-warning-border: var(--amber-200);
+
+  --color-danger-solid: var(--red-600);
+  --color-danger-on-solid: var(--gray-0);
+  --color-danger-text: var(--red-700);
+  --color-danger-subtle: var(--red-50);
+  --color-danger-border: var(--red-200);
+
+  --color-info-solid: var(--blue-600);
+  --color-info-on-solid: var(--gray-0);
+  --color-info-text: var(--blue-700);
+  --color-info-subtle: var(--blue-50);
+  --color-info-border: var(--blue-200);
+
+  --elevation-raised: var(--shadow-100);
+  --elevation-overlay: var(--shadow-300);
+}
+
+/* Theme-independent semantic roles */
+:root {
+  /* Typography roles */
+  --font-ui: var(--font-family-sans);
+  --font-data: var(--font-family-sans); /* always paired with tabular-nums */
+  --font-code: var(--font-family-mono); /* coordinates, timestamps, IDs */
+
+  --text-caption-size: var(--font-size-100);
+  --text-label-size: var(--font-size-200);
+  --text-body-sm-size: var(--font-size-300);
+  --text-body-size: var(--font-size-400);
+  --text-title-size: var(--font-size-500);
+  --text-metric-size: var(--font-size-700);
+
+  --font-weight-body: var(--font-weight-regular);
+  --font-weight-label: var(--font-weight-medium);
+  --font-weight-emphasis: var(--font-weight-semibold);
+
+  --line-height-heading: var(--line-height-tight);
+  --line-height-body: var(--line-height-normal);
+  --letter-spacing-heading: var(--letter-spacing-tight);
+
+  /* Shape roles */
+  --radius-inline: var(--radius-100);
+  --radius-control: var(--radius-200);
+  --radius-container: var(--radius-300);
+  --radius-overlay: var(--radius-400);
+  --radius-pill: var(--radius-full);
+
+  /* Motion roles */
+  --motion-duration-fast: var(--duration-100);
+  --motion-duration-base: var(--duration-200);
+  --motion-ease: var(--ease-standard);
+  --transition-control: var(--motion-duration-base) var(--motion-ease);
+}

@@ -1,0 +1,91 @@
+/*
+ * Tier 3 — Component tokens
+ *
+ * Decisions that belong to one component. They reference semantic tokens
+ * only, so they follow the theme automatically. Add a token here when a
+ * component needs to diverge from the plain semantic role, or when a value
+ * is read from JavaScript (e.g. Google Maps overlays).
+ *
+ * Rules
+ * - Values may only reference semantic tokens (var(--color-*), var(--radius-*), ...).
+ * - Name format: --<component>-<part>-<property>[-<state>].
+ * - Declared on every theme scope (not just :root) so a nested .light/.dark
+ *   element resolves them against its own theme. Custom properties are
+ *   substituted where they are declared, then inherited as plain values.
+ */
+
+:root,
+.dark,
+.light {
+  /* Button */
+  --button-primary-bg: var(--color-accent);
+  --button-primary-bg-hover: var(--color-accent-hover);
+  --button-primary-fg: var(--color-fg-on-accent);
+  --button-secondary-bg: var(--color-bg-muted);
+  --button-secondary-bg-hover: var(--color-border-strong);
+  --button-secondary-fg: var(--color-fg-default);
+  --button-danger-bg: var(--color-danger-solid);
+  --button-danger-fg: var(--color-danger-on-solid);
+  --button-ghost-bg-hover: var(--color-bg-hover);
+  --button-radius: var(--radius-control);
+
+  /* Form input */
+  --input-bg: var(--color-bg-sunken);
+  --input-fg: var(--color-fg-default);
+  --input-placeholder: var(--color-fg-subtle);
+  --input-border: var(--color-border-default);
+  --input-border-hover: var(--color-border-strong);
+  --input-border-focus: var(--color-focus-ring);
+  --input-radius: var(--radius-control);
+
+  /* Panel (sidebar sections, HUD, floating cards) */
+  --panel-bg: var(--color-bg-surface);
+  --panel-border: var(--color-border-default);
+  --panel-divider: var(--color-border-subtle);
+  --panel-radius: var(--radius-container);
+  --panel-title-fg: var(--color-fg-default);
+  --panel-title-size: var(--text-body-sm-size);
+  --panel-title-weight: var(--font-weight-emphasis);
+
+  /* List item (tasks, drones, sessions) */
+  --list-item-bg: transparent;
+  --list-item-bg-hover: var(--color-bg-hover);
+  --list-item-bg-selected: var(--color-bg-selected);
+  --list-item-fg-selected: var(--color-accent-text);
+
+  /* Telemetry data readout */
+  --metric-label-fg: var(--color-fg-muted);
+  --metric-label-size: var(--text-label-size);
+  --metric-value-fg: var(--color-fg-default);
+  --metric-value-size: var(--text-metric-size);
+  --metric-value-weight: var(--font-weight-emphasis);
+  --metric-unit-fg: var(--color-fg-subtle);
+
+  /* Selected drone card in the HUD */
+  --metric-selected-bg: var(--color-bg-selected);
+  --metric-selected-border: var(--color-accent);
+
+  /* Status indicator dot */
+  --status-dot-size: 8px;
+
+  /* Activity / diagnosis log */
+  --log-timestamp-fg: var(--color-fg-subtle);
+  --log-text-fg: var(--color-fg-default);
+
+  /* Overlays (dialog, popover, tooltip) */
+  --overlay-bg: var(--color-bg-surface-raised);
+  --overlay-border: var(--color-border-default);
+  --overlay-radius: var(--radius-overlay);
+  --overlay-shadow: var(--elevation-overlay);
+  --backdrop-opacity: 0.6;
+
+  /* Map overlays (read from JS through readColorToken) */
+  --map-route-active: var(--color-accent);
+  --map-route-history: var(--color-fg-subtle);
+  --map-route-planned: var(--color-fg-muted);
+  --map-waypoint: var(--color-danger-solid);
+  --map-marker-selected: var(--color-accent);
+  --map-infowindow-bg: var(--color-bg-surface-raised);
+  --map-infowindow-fg: var(--color-fg-default);
+  --map-infowindow-muted: var(--color-fg-muted);
+}

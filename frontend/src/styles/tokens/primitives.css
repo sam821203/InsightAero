@@ -1,0 +1,135 @@
+/*
+ * Tier 1 — Primitive tokens
+ *
+ * The raw palette and scales. They describe what a value IS, never where it
+ * is used, and they do not change between themes.
+ *
+ * Rule: components and Tailwind classes never reference this file directly.
+ * Only semantic.css may read from it.
+ *
+ * Colors are stored as bare HSL channels ("H S% L%") so Tailwind can apply
+ * opacity modifiers, e.g. bg-surface/80 -> hsl(var(--x) / 0.8).
+ */
+
+:root {
+  /* Neutral: cool gray, low saturation so data colors stand out */
+  --gray-0: 0 0% 100%;
+  --gray-25: 220 20% 98.5%;
+  --gray-50: 220 16% 96.5%;
+  --gray-100: 220 14% 93%;
+  --gray-200: 220 12% 87%;
+  --gray-300: 220 10% 77%;
+  --gray-400: 220 8% 62%;
+  --gray-500: 220 7% 48%;
+  --gray-600: 220 8% 38%;
+  --gray-700: 220 10% 27%;
+  --gray-750: 220 11% 22%;
+  --gray-800: 220 12% 18%;
+  --gray-850: 220 13% 14%;
+  --gray-900: 220 14% 10.5%;
+  --gray-950: 220 16% 7%;
+  --gray-1000: 220 20% 4%;
+
+  /* Blue: the single interactive / brand hue */
+  --blue-50: 210 100% 97%;
+  --blue-100: 210 95% 93%;
+  --blue-200: 210 92% 85%;
+  --blue-300: 210 90% 74%;
+  --blue-400: 210 88% 62%;
+  --blue-500: 212 85% 52%;
+  --blue-600: 214 80% 45%;
+  --blue-700: 216 76% 38%;
+  --blue-800: 218 70% 30%;
+  --blue-900: 220 65% 22%;
+  --blue-950: 222 60% 14%;
+
+  /* Green: nominal / success */
+  --green-50: 145 70% 96%;
+  --green-100: 145 65% 90%;
+  --green-200: 145 60% 80%;
+  --green-300: 146 55% 62%;
+  --green-400: 147 55% 50%;
+  --green-500: 148 63% 40%;
+  --green-600: 150 66% 32%;
+  --green-700: 152 68% 25%;
+  --green-800: 154 64% 19%;
+  --green-900: 155 60% 14%;
+  --green-950: 156 55% 9%;
+
+  /* Amber: caution / warning */
+  --amber-50: 45 100% 96%;
+  --amber-100: 44 96% 89%;
+  --amber-200: 42 96% 78%;
+  --amber-300: 40 95% 64%;
+  --amber-400: 38 92% 54%;
+  --amber-500: 35 92% 46%;
+  --amber-600: 30 90% 38%;
+  --amber-700: 26 85% 31%;
+  --amber-800: 24 78% 24%;
+  --amber-900: 22 70% 18%;
+  --amber-950: 22 65% 11%;
+
+  /* Red: critical / danger */
+  --red-50: 0 90% 97%;
+  --red-100: 0 90% 93%;
+  --red-200: 0 88% 85%;
+  --red-300: 0 85% 74%;
+  --red-400: 0 80% 64%;
+  --red-500: 0 72% 54%;
+  --red-600: 0 70% 45%;
+  --red-700: 0 70% 37%;
+  --red-800: 0 66% 28%;
+  --red-900: 0 60% 20%;
+  --red-950: 0 55% 12%;
+
+  /* Typography
+   * Latin text uses Inter; CJK falls through to the best system font
+   * (PingFang TC on macOS, Microsoft JhengHei on Windows, Noto elsewhere)
+   * instead of shipping a multi-megabyte CJK webfont.
+   */
+  --font-family-sans: "Inter Variable", "Inter", "PingFang TC", "Noto Sans TC",
+    "Noto Sans CJK TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-family-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace,
+    "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --font-size-100: 0.6875rem; /* 11px */
+  --font-size-200: 0.75rem; /* 12px */
+  --font-size-300: 0.8125rem; /* 13px */
+  --font-size-400: 0.875rem; /* 14px */
+  --font-size-500: 1rem; /* 16px */
+  --font-size-600: 1.25rem; /* 20px */
+  --font-size-700: 1.5rem; /* 24px */
+  --font-size-800: 2rem; /* 32px */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.5;
+
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.02em;
+
+  /* Shape */
+  --radius-100: 4px;
+  --radius-200: 6px;
+  --radius-300: 8px;
+  --radius-400: 12px;
+  --radius-full: 9999px;
+
+  /* Elevation: neutral shadows only, no colored glows */
+  --shadow-100: 0 1px 2px 0 hsl(220 30% 4% / 0.06);
+  --shadow-200: 0 2px 6px -1px hsl(220 30% 4% / 0.1), 0 1px 2px 0 hsl(220 30% 4% / 0.06);
+  --shadow-300: 0 8px 24px -4px hsl(220 30% 4% / 0.16), 0 2px 6px -2px hsl(220 30% 4% / 0.08);
+  --shadow-400: 0 16px 40px -8px hsl(220 30% 4% / 0.24), 0 4px 12px -4px hsl(220 30% 4% / 0.1);
+
+  /* Motion */
+  --duration-100: 100ms;
+  --duration-200: 160ms;
+  --duration-300: 240ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
