@@ -48,8 +48,8 @@ export default function FlightSessionsList({ onSelectSession }: Props) {
   };
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <div className="border-b border-border px-3 py-2 font-display text-xs uppercase tracking-widest text-muted-foreground">
+    <div className="panel">
+      <div className="panel-header panel-title">
         飛行場次
       </div>
       <ScrollArea className="h-[200px]">
@@ -66,7 +66,7 @@ export default function FlightSessionsList({ onSelectSession }: Props) {
                   onClick={() => handleClick(s.id)}
                   className={`w-full rounded px-2 py-1.5 text-left text-xs transition-colors ${
                     selectedId === s.id
-                      ? "bg-primary/20 text-primary"
+                      ? "bg-surface-selected text-interactive-text"
                       : "text-foreground hover:bg-accent"
                   }`}
                 >

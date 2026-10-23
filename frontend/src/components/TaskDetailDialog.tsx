@@ -58,7 +58,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-border bg-destructive/5 p-4 text-sm text-destructive">
+      <div className="rounded-lg border border-border border-destructive-border bg-destructive-subtle p-4 text-sm text-destructive-text">
         無法載入報告：{(error as Error).message}
       </div>
     );
@@ -82,8 +82,8 @@ function ReportBlock({ taskId }: { taskId: number }) {
 
   if (report.status === "failed") {
     return (
-      <div className="rounded-lg border border-border bg-destructive/5 p-4 text-sm">
-        <p className="font-medium text-destructive">報告產生失敗</p>
+      <div className="rounded-lg border border-border border-destructive-border bg-destructive-subtle p-4 text-sm">
+        <p className="font-medium text-destructive-text">報告產生失敗</p>
         {report.error_message && (
           <p className="mt-1 text-muted-foreground">{report.error_message}</p>
         )}
@@ -96,7 +96,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <h3 className="mb-2 font-display text-xs uppercase tracking-widest text-muted-foreground">
+      <h3 className="panel-title mb-2">
         結案報告
       </h3>
       <div className="whitespace-pre-wrap text-sm text-foreground">
@@ -154,7 +154,7 @@ export default function TaskDetailDialog({
               <p className="text-sm text-muted-foreground">未選擇任務</p>
             )}
             {enabled && error && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-destructive-text">
                 {(error as Error).message}
               </p>
             )}
@@ -174,7 +174,7 @@ export default function TaskDetailDialog({
                   )}
                 </div>
                 <div className="rounded-lg border border-border bg-card p-4">
-                  <h2 className="font-display text-xs uppercase tracking-widest text-muted-foreground">
+                  <h2 className="panel-title">
                     指派
                   </h2>
                   <ul className="mt-2 space-y-2">

@@ -145,7 +145,7 @@ export default function DestinationAddressInput({
       />
       {dropdownOpen && suggestions.length > 0 && (
         <ul
-          className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-border bg-background text-foreground shadow-lg py-1 text-sm"
+          className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-border bg-popover text-popover-foreground shadow-overlay py-1 text-sm"
           role="listbox"
         >
           {suggestions.map((item, i) => (

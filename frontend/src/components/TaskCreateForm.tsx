@@ -174,9 +174,9 @@ export default function TaskCreateForm({
   };
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <div className="border-b border-border px-3 py-2">
-        <span className="font-display text-xs uppercase tracking-widest text-muted-foreground">
+    <div className="panel">
+      <div className="panel-header">
+        <span className="panel-title">
           建立任務
         </span>
       </div>
@@ -188,7 +188,7 @@ export default function TaskCreateForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="例如：上午巡邏"
-            className="mt-0.5 w-full rounded border border-border bg-background px-2 py-1.5 text-xs"
+            className="field-input mt-0.5 px-2 py-1.5 text-xs"
           />
         </div>
 
@@ -203,7 +203,7 @@ export default function TaskCreateForm({
               <select
                 value={droneId || ""}
                 onChange={(e) => updateDroneId(index, Number(e.target.value))}
-                className="flex-1 rounded border border-border bg-background px-2 py-1"
+                className="field-input flex-1 px-2 py-1"
               >
                 <option value="">選擇無人機</option>
                 {assignableDrones.map((d) => (
@@ -248,7 +248,7 @@ export default function TaskCreateForm({
                   setConfirmedStart({ lat: result.lat, lng: result.lng });
                 }}
                 placeholder="例如：信義區公所"
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm w-full"
+                className="field-input px-3 py-2 text-sm"
               />
               <Button
                 type="button"
@@ -292,7 +292,7 @@ export default function TaskCreateForm({
                       setConfirmedDestination({ lat: result.lat, lng: result.lng });
                     }}
                     placeholder="例如：台北101、信義路一段 1 號"
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm w-full"
+                    className="field-input px-3 py-2 text-sm"
                     disabled
                   />
                   <Button
@@ -323,7 +323,7 @@ export default function TaskCreateForm({
                   setConfirmedDestination({ lat: result.lat, lng: result.lng });
                 }}
                 placeholder="例如：台北101、信義路一段 1 號"
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm w-full"
+                className="field-input px-3 py-2 text-sm"
               />
               <Button
                 type="button"
@@ -344,7 +344,7 @@ export default function TaskCreateForm({
           )}
         </div>
 
-        {error && <p className="text-[11px] text-destructive">{error}</p>}
+        {error && <p className="text-[11px] text-destructive-text">{error}</p>}
         <Button
           type="submit"
           size="sm"

@@ -20,16 +20,16 @@ export default function WeatherControls({
   const isTailwind = effectiveSpeedMmin != null && baseSpeedMmin != null && effectiveSpeedMmin > baseSpeedMmin * 1.05;
 
   return (
-    <div className="flex min-w-[220px] flex-col gap-4 rounded-lg border border-border bg-card p-4">
-      <h3 className="font-display text-xs uppercase tracking-widest text-primary">即時氣象</h3>
+    <div className="panel flex min-w-[220px] flex-col gap-4 p-4">
+      <h3 className="panel-title">即時氣象</h3>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Wind className="h-3.5 w-3.5 text-primary" />
+            <Wind className="h-3.5 w-3.5 text-subtle-foreground" />
             <span className="text-xs text-muted-foreground">風速</span>
           </div>
-          <span className="font-display text-sm text-primary">{windSpeed} m/s</span>
+          <span className="text-sm font-medium tabular-nums text-foreground">{windSpeed} m/s</span>
         </div>
       </div>
 
@@ -37,17 +37,17 @@ export default function WeatherControls({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Navigation
-              className="h-3.5 w-3.5 text-primary"
+              className="h-3.5 w-3.5 text-subtle-foreground"
               style={{ transform: `rotate(${windDeg}deg)` }}
             />
             <span className="text-xs text-muted-foreground">風向</span>
           </div>
-          <span className="font-display text-sm text-primary">{windDeg}°</span>
+          <span className="text-sm font-medium tabular-nums text-foreground">{windDeg}°</span>
         </div>
       </div>
 
       {(isHeadwind || isTailwind) && (
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-xs text-muted-foreground">
           {isHeadwind && "受逆風影響，有效分速下降"}
           {isTailwind && "順風，有效分速提升"}
         </p>
