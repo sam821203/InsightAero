@@ -27,6 +27,8 @@ import { Satellite, Sun, Moon, Loader2 } from "lucide-react";
 import type { FlightPathPoint } from "@/types/telemetry";
 import type { TaskItem } from "@/types/task";
 import { useTasks } from "@/hooks/useTasks";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const ACTIVE_TASK_STATUSES = ["pending", "starting", "running", "paused"] as const;
 
@@ -35,6 +37,7 @@ function isActiveTask(task: TaskItem): boolean {
 }
 
 export default function Index() {
+  const { t } = useTranslation();
   const [historyPath, setHistoryPath] = useState<FlightPathPoint[] | null>(null);
   const [isResizing, setIsResizing] = useState(false);
   const [lastEndPoint, setLastEndPoint] = useState<{
@@ -240,8 +243,8 @@ export default function Index() {
     if (effectiveId == null) return undefined;
     const drone = dronesForMap.find((d) => d.id === effectiveId);
     if (drone?.name) return drone.name;
-    return selectedDroneId === 0 ? "Drone-1" : `Drone-${selectedDroneId}`;
-  }, [droneIdsForMap, selectedDroneId, dronesForMap]);
+    return t("common.droneFallback", { id: selectedDroneId === 0 ? 1 : selectedDroneId });
+  }, [droneIdsForMap, selectedDroneId, dronesForMap, t]);
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
@@ -249,26 +252,27 @@ export default function Index() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <Loader2 className="h-10 w-10 animate-spin" aria-hidden />
-            <span className="text-sm">載入中…</span>
+            <span className="text-sm">{t("common.loading")}</span>
           </div>
         </div>
       )}
       <header className="flex items-center justify-between border-b border-border bg-card/80 px-5 py-2.5 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <Satellite className="h-5 w-5 text-foreground" />
-          <h1 className="text-base font-semibold tracking-tight text-foreground">INSIGHTAERO</h1>
-          <span className="ml-2 text-[10px] uppercase tracking-widest text-muted-foreground">
-            Mission Control v1.0
+          <h1 className="text-base font-semibold tracking-tight text-foreground">InsightAero</h1>
+          <span className="border-l border-border pl-3 text-xs text-muted-foreground">
+            {t("app.tagline")}
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
             className="h-8 w-8 text-muted-foreground"
-            aria-label={theme === "dark" ? "切換至淺色模式" : "切換至深色模式"}
+            aria-label={theme === "dark" ? t("app.switchToLight") : t("app.switchToDark")}
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
@@ -300,7 +304,7 @@ export default function Index() {
                 />
               ) : (
                 <div className="flex min-h-[280px] w-full flex-1 items-center justify-center rounded-lg border border-border bg-card shadow-raised text-muted-foreground text-sm">
-                  取得定位中…
+                  {t("app.gettingLocation")}
                 </div>
               )}
             </div>
@@ -331,7 +335,7 @@ export default function Index() {
         >
           <button
             type="button"
-            aria-label="拖曳調整右側欄寬度"
+            aria-label={t("app.resizeSidebar")}
             onMouseDown={startResize}
             className={`absolute left-0 top-0 bottom-0 z-10 w-1 cursor-col-resize touch-none -translate-x-1/2 hover:bg-primary/20 transition-colors ${isResizing ? "bg-primary/40" : ""}`}
           />
@@ -366,14 +370,14 @@ export default function Index() {
       <AlertDialog open={addressErrorOpen} onOpenChange={setAddressErrorOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>地址錯誤</AlertDialogTitle>
+            <AlertDialogTitle>{t("addressError.title")}</AlertDialogTitle>
             <AlertDialogDescription>
-              無法辨識該地點，請輸入有效地址或景點／地標名稱。
+              {t("addressError.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setAddressErrorOpen(false)}>
-              確定
+              {t("common.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

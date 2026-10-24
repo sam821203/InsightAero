@@ -2,6 +2,7 @@ import { memo } from "react";
 import type { TelemetryPacket } from "@/types/telemetry";
 import { Activity, Compass, Gauge, MapPin, Mountain, Zap } from "lucide-react";
 import { Panel } from "@/components/ui/panel";
+import { useTranslation } from "react-i18next";
 
 const LABEL = "text-xs font-medium leading-tight text-muted-foreground";
 const VALUE = "text-2xl font-semibold leading-tight tracking-tight tabular-nums";
@@ -55,6 +56,7 @@ function GaugeCard({
 }
 
 function TelemetryHUDInner({ telemetry, activeDroneLabel }: Props) {
+  const { t } = useTranslation();
   const batteryPct = Math.max(0, telemetry.battery);
   const level = batteryLevel(telemetry.battery);
 
@@ -64,24 +66,24 @@ function TelemetryHUDInner({ telemetry, activeDroneLabel }: Props) {
       {activeDroneLabel != null && activeDroneLabel !== "" && (
         <div className="flex h-[116px] min-w-[140px] flex-col items-center justify-center gap-1.5 rounded-lg border border-interactive bg-surface-selected p-3">
           <MapPin className="h-5 w-5 shrink-0 text-interactive-text" />
-          <span className={LABEL}>目前機體</span>
+          <span className={LABEL}>{t("hud.selectedDrone")}</span>
           <span className="text-lg font-semibold leading-tight tracking-tight text-foreground text-center break-words">
             {activeDroneLabel}
           </span>
         </div>
       )}
-      <GaugeCard icon={Mountain} label="Altitude" value={telemetry.alt} unit="m" />
-      <GaugeCard icon={Compass} label="Heading" value={telemetry.heading.toFixed(1)} unit="°" />
-      <GaugeCard icon={Activity} label="Speed" value={telemetry.speed} unit="" />
+      <GaugeCard icon={Mountain} label={t("hud.altitude")} value={telemetry.alt} unit="m" />
+      <GaugeCard icon={Compass} label={t("hud.heading")} value={telemetry.heading.toFixed(1)} unit="°" />
+      <GaugeCard icon={Activity} label={t("hud.speed")} value={telemetry.speed} unit="m/min" />
       <GaugeCard
         icon={Gauge}
-        label="Eff. Speed"
+        label={t("hud.effectiveSpeed")}
         value={telemetry.effective_speed_m_min}
         unit="m/min"
       />
       <Panel className="flex h-[116px] min-w-[140px] flex-col items-center justify-center gap-1 p-3">
         <Zap className={`h-4 w-4 shrink-0 ${level === "nominal" ? "text-subtle-foreground" : LEVEL_TEXT[level]}`} />
-        <span className={LABEL}>Battery</span>
+        <span className={LABEL}>{t("hud.battery")}</span>
         <span className={`${VALUE} ${LEVEL_TEXT[level]}`}>{batteryPct.toFixed(1)}%</span>
         <div className="flex min-h-[14px] w-full items-center">
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">

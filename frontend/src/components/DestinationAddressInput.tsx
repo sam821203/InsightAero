@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { loadGoogleMaps } from "@/utils/geocode";
 import { importLibrary } from "@googlemaps/js-api-loader";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
 
 export interface PlaceResult {
   lat: number;
@@ -36,6 +37,7 @@ export default function DestinationAddressInput({
   id,
   className,
 }: DestinationAddressInputProps) {
+  const { t } = useTranslation();
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -164,7 +166,7 @@ export default function DestinationAddressInput({
       )}
       {loading && (
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
-          搜尋中…
+          {t("addressInput.searching")}
         </span>
       )}
     </div>

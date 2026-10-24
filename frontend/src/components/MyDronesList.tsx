@@ -22,6 +22,7 @@ import {
 import type { ApiError } from "@/api/client";
 import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
 
 interface MyDronesListProps {
   /** 當此值變動時會重新取得無人機列表（例如任務開始/取消/完成後，管理區塊的「待命/飛行中」會同步） */
@@ -29,6 +30,7 @@ interface MyDronesListProps {
 }
 
 export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
+  const { t } = useTranslation();
   const [drones, setDrones] = useState<DroneResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -109,9 +111,9 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
       .catch((e) => {
         const err = e as ApiError;
         if (err.status === 409) {
-          setDeleteError(err.detail ?? "此無人機已有任務或飛行紀錄，無法刪除");
+          setDeleteError(err.detail ?? t("drones.deleteBlocked"));
         } else {
-          setDeleteError("刪除失敗");
+          setDeleteError(t("drones.deleteFailed"));
         }
       })
       .finally(() => setDeleting(false));
@@ -134,7 +136,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
   return (
     <Panel>
       <PanelHeader>
-        <PanelTitle>管理無人機</PanelTitle>
+        <PanelTitle>{t("drones.title")}</PanelTitle>
         <Button
           type="button"
           variant="ghost"
@@ -143,7 +145,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
           onClick={() => setShowAddForm(true)}
         >
           <Plus className="h-3 w-3" />
-          新增
+          {t("common.add")}
         </Button>
       </PanelHeader>
       {showAddForm && (
@@ -153,7 +155,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            placeholder="無人機名稱"
+            placeholder={t("drones.namePlaceholder")}
             className="flex-1"
             maxLength={128}
           />
@@ -164,7 +166,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
             disabled={adding || !newName.trim()}
             onClick={handleAdd}
           >
-            {adding ? "…" : "送出"}
+            {adding ? "…" : t("common.add")}
           </Button>
           <Button
             type="button"
@@ -176,16 +178,16 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
               setNewName("");
             }}
           >
-            取消
+            {t("common.cancel")}
           </Button>
         </div>
       )}
       <ScrollArea className="h-[180px]">
         {loading ? (
-          <div className="p-3 text-xs text-muted-foreground">載入中…</div>
+          <div className="p-3 text-xs text-muted-foreground">{t("common.loading")}</div>
         ) : drones.length === 0 ? (
           <div className="p-3 text-xs text-muted-foreground">
-            尚無無人機，請點「新增」建立
+            {t("drones.empty")}
           </div>
         ) : (
           <ul className="space-y-0.5 p-2">
@@ -201,7 +203,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
                       type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      placeholder="名稱"
+                      placeholder={t("drones.nameShort")}
                       className="min-w-0 flex-1"
                       maxLength={128}
                     />
@@ -212,7 +214,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
                       step={10}
                       value={editSpeed}
                       onChange={(e) => setEditSpeed(e.target.value)}
-                      placeholder="速度"
+                      placeholder={t("drones.speedPlaceholder")}
                       className="w-16 tabular-nums"
                     />
                     <Button
@@ -222,7 +224,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
                       disabled={savingEdit || !editName.trim() || parseFloat(editSpeed) <= 0}
                       onClick={handleSaveEdit}
                     >
-                      {savingEdit ? "…" : "送出"}
+                      {savingEdit ? "…" : t("common.save")}
                     </Button>
                     <Button
                       type="button"
@@ -232,7 +234,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
                       disabled={savingEdit}
                       onClick={cancelEdit}
                     >
-                      取消
+                      {t("common.cancel")}
                     </Button>
                   </>
                 ) : (
@@ -245,7 +247,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
                       {d.name}
                     </span>
                     <span className="shrink-0 text-muted-foreground">
-                      {d.status === "flying" ? "飛行中" : "待命"}
+                      {d.status === "flying" ? t("status.drone.flying") : t("status.drone.idle")}
                     </span>
                     <Button
                       type="button"
@@ -253,7 +255,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
                       size="icon"
                       className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
                       onClick={() => startEdit(d)}
-                      title="編輯"
+                      title={t("common.edit")}
                     >
                       <Pencil className="h-3 w-3" />
                     </Button>
@@ -264,7 +266,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
                       className="h-6 w-6 shrink-0 text-muted-foreground hover:bg-destructive-subtle hover:text-destructive-text"
                       disabled={d.status === "flying"}
                       onClick={() => openDeleteConfirm(d.id)}
-                      title={d.status === "flying" ? "飛行中無法刪除" : "刪除"}
+                      title={d.status === "flying" ? t("drones.cannotDeleteFlying") : t("common.delete")}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -284,9 +286,9 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>刪除無人機</AlertDialogTitle>
+            <AlertDialogTitle>{t("drones.deleteDialogTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              確定要刪除此無人機嗎？若已有任務或飛行紀錄則無法刪除。
+              {t("drones.deleteDialogDescription")}
               {deleteError != null && (
                 <span className="mt-2 block text-destructive-text">{deleteError}</span>
               )}
@@ -294,14 +296,14 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={closeDeleteConfirm}>
-              取消
+              {t("common.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleting ? "…" : "確定刪除"}
+              {deleting ? "…" : t("drones.deleteConfirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -7,12 +7,15 @@ import {
   type FlightSessionItem,
 } from "@/api/flightSessions";
 import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
+import { useTranslation } from "react-i18next";
+import { formatShortDateTime } from "@/lib/format";
 
 interface Props {
   onSelectSession: (sessionId: number, path: FlightPathPoint[]) => void;
 }
 
 export default function FlightSessionsList({ onSelectSession }: Props) {
+  const { t, i18n } = useTranslation();
   const [sessions, setSessions] = useState<FlightSessionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -44,20 +47,19 @@ export default function FlightSessionsList({ onSelectSession }: Props) {
 
   const formatTime = (iso: string | null) => {
     if (!iso) return "—";
-    const d = new Date(iso);
-    return d.toLocaleString("zh-TW", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    return formatShortDateTime(iso, i18n.language);
   };
 
   return (
     <Panel>
       <PanelHeader>
-        <PanelTitle>飛行場次</PanelTitle>
+        <PanelTitle>{t("sessions.title")}</PanelTitle>
       </PanelHeader>
       <ScrollArea className="h-[200px]">
         {loading ? (
-          <div className="p-3 text-xs text-muted-foreground">載入中…</div>
+          <div className="p-3 text-xs text-muted-foreground">{t("common.loading")}</div>
         ) : sessions.length === 0 ? (
-          <div className="p-3 text-xs text-muted-foreground">尚無場次</div>
+          <div className="p-3 text-xs text-muted-foreground">{t("sessions.empty")}</div>
         ) : (
           <ul className="p-2 space-y-1">
             {sessions.map((s) => (
@@ -71,7 +73,7 @@ export default function FlightSessionsList({ onSelectSession }: Props) {
                       : "text-foreground hover:bg-accent"
                   }`}
                 >
-                  <span className="font-medium">{s.drone_name ?? `Session ${s.id}`}</span>
+                  <span className="font-medium">{s.drone_name ?? t("sessions.fallbackName", { id: s.id })}</span>
                   <span className="ml-2 text-muted-foreground">
                     {formatTime(s.start_time)} – {formatTime(s.end_time)}
                   </span>

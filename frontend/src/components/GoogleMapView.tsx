@@ -10,29 +10,34 @@ import type {
   TelemetryByDrone,
   TelemetryPacket,
 } from "@/types/telemetry";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 function buildDroneInfoContent(
-  t: TelemetryPacket | undefined,
+  telemetry: TelemetryPacket | undefined,
   id: number,
   theme: Theme
 ): string {
-  const label = id === 0 ? "Drone-1" : `Drone-${id}`;
+  const t = i18n.t;
+  const label = t("common.droneFallback", { id: id === 0 ? 1 : id });
   const bg = readColorToken("color-map-infowindow-bg", theme);
   const text = readColorToken("color-map-infowindow-fg", theme);
   const muted = readColorToken("color-map-infowindow-muted", theme);
-  if (!t) {
-    return `<div style="padding:8px 12px;min-width:140px;background:${bg};color:${text};font-family:var(--font-ui);font-variant-numeric:tabular-nums;font-size:12px;">${label}<br/><span style="color:${muted}">無即時遙測</span></div>`;
+  if (!telemetry) {
+    return `<div style="padding:8px 12px;min-width:140px;background:${bg};color:${text};font-family:var(--font-ui);font-variant-numeric:tabular-nums;font-size:12px;">${label}<br/><span style="color:${muted}">${t("map.noTelemetry")}</span></div>`;
   }
-  const batteryPct = Math.max(0, t.battery);
+  const batteryPct = Math.max(0, telemetry.battery);
+  const row = (name: string, value: string) =>
+    `<tr><td style="color:${muted};padding:2px 6px 2px 0;">${name}</td><td style="text-align:right;">${value}</td></tr>`;
   return `<div style="padding:10px 14px;min-width:180px;background:${bg};color:${text};font-family:var(--font-ui);font-variant-numeric:tabular-nums;font-size:12px;">
   <strong style="font-size:13px;">${label}</strong>
   <table style="margin-top:8px;width:100%;border-collapse:collapse;color:${text};">
-    <tr><td style="color:${muted};padding:2px 6px 2px 0;">高度</td><td style="text-align:right;">${t.alt} m</td></tr>
-    <tr><td style="color:${muted};padding:2px 6px 2px 0;">航向</td><td style="text-align:right;">${t.heading.toFixed(1)}°</td></tr>
-    <tr><td style="color:${muted};padding:2px 6px 2px 0;">速度</td><td style="text-align:right;">${t.speed}</td></tr>
-    <tr><td style="color:${muted};padding:2px 6px 2px 0;">有效速度</td><td style="text-align:right;">${t.effective_speed_m_min} m/min</td></tr>
-    <tr><td style="color:${muted};padding:2px 6px 2px 0;">電量</td><td style="text-align:right;">${batteryPct.toFixed(1)}%</td></tr>
-    <tr><td style="color:${muted};padding:2px 6px 2px 0;">風速</td><td style="text-align:right;">${t.wind_speed} · ${t.wind_deg}°</td></tr>
+    ${row(t("map.info.altitude"), `${telemetry.alt} m`)}
+    ${row(t("map.info.heading"), `${telemetry.heading.toFixed(1)}°`)}
+    ${row(t("map.info.speed"), `${telemetry.speed} m/min`)}
+    ${row(t("map.info.effectiveSpeed"), `${telemetry.effective_speed_m_min} m/min`)}
+    ${row(t("map.info.battery"), `${batteryPct.toFixed(1)}%`)}
+    ${row(t("map.info.wind"), `${telemetry.wind_speed} m/s · ${telemetry.wind_deg}°`)}
   </table>
 </div>`;
 }
@@ -310,6 +315,7 @@ export default function GoogleMapView({
   onAllDroneMarkersMounted,
 }: Props) {
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
@@ -585,15 +591,16 @@ export default function GoogleMapView({
       originMarkerRef.current = new google.maps.Marker({
         position: pos,
         map,
-        title: "起點",
+        title: t("map.origin"),
         icon: iconConfig,
       });
     } else {
+      originMarkerRef.current.setTitle(t("map.origin"));
       originMarkerRef.current.setPosition(pos);
       originMarkerRef.current.setIcon(iconConfig);
       originMarkerRef.current.setMap(map);
     }
-  }, [origin, theme]);
+  }, [origin, theme, t]);
 
   // 終點 marker：使用者確認地址後顯示（較大）
   useEffect(() => {
@@ -617,15 +624,16 @@ export default function GoogleMapView({
       destinationMarkerRef.current = new google.maps.Marker({
         position: pos,
         map,
-        title: "終點",
+        title: t("map.destination"),
         icon: iconConfig,
       });
     } else {
+      destinationMarkerRef.current.setTitle(t("map.destination"));
       destinationMarkerRef.current.setPosition(pos);
       destinationMarkerRef.current.setIcon(iconConfig);
       destinationMarkerRef.current.setMap(map);
     }
-  }, [destination, theme]);
+  }, [destination, theme, t]);
 
   // 多任務指派：每個指派顯示起點、終點與連線（僅在無單一 origin/destination 時不衝突，可並存）
   useEffect(() => {
@@ -648,13 +656,13 @@ export default function GoogleMapView({
       const startM = new google.maps.Marker({
         position: { lat: a.start_lat, lng: a.start_lng },
         map,
-        title: a.drone_name ? `${a.drone_name} 起點` : "起點",
+        title: a.drone_name ? t("map.droneOrigin", { name: a.drone_name }) : t("map.origin"),
         icon: taskIconConfig,
       });
       const destM = new google.maps.Marker({
         position: { lat: a.dest_lat, lng: a.dest_lng },
         map,
-        title: a.drone_name ? `${a.drone_name} 終點` : "終點",
+        title: a.drone_name ? t("map.droneDestination", { name: a.drone_name }) : t("map.destination"),
         icon: taskIconConfig,
       });
       taskAssignmentMarkersRef.current.push(startM, destM);
@@ -671,7 +679,7 @@ export default function GoogleMapView({
       });
       taskAssignmentLinesRef.current.push(line);
     }
-  }, [taskAssignments, theme]);
+  }, [taskAssignments, theme, t]);
 
   if (droneIds.length === 0 && lat !== undefined && lng !== undefined) {
     const map = mapRef.current;
@@ -741,7 +749,7 @@ export default function GoogleMapView({
   if (!hasKey) {
     return (
       <div className="flex w-full h-full items-center justify-center rounded-lg border border-border bg-card shadow-raised text-muted-foreground text-sm">
-        請設定 VITE_GOOGLE_MAPS_API_KEY 以顯示地圖
+        {t("map.missingKey")}
       </div>
     );
   }

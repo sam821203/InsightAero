@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -24,6 +25,23 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+function DialogCloseButton() {
+  const { t } = useTranslation();
+  return (
+    <DialogPrimitive.Close asChild>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="absolute right-4 top-4 h-8 w-8 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+        aria-label={t("dialog.close")}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </DialogPrimitive.Close>
+  );
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
@@ -42,17 +60,7 @@ const DialogContent = React.forwardRef<
     >
       {children}
       {showClose && (
-        <DialogPrimitive.Close asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-4 h-8 w-8 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
-            aria-label="關閉"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </DialogPrimitive.Close>
+        <DialogCloseButton />
       )}
     </DialogPrimitive.Content>
   </DialogPortal>
