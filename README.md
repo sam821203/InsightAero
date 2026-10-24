@@ -20,7 +20,7 @@
 
 | Layer | Technologies |
 |-------|--------------|
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Google Maps JavaScript API, TanStack Query, Zustand, Radix UI, Lucide |
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Google Maps JavaScript API, TanStack Query, Zustand, Radix UI, Lucide, react-i18next (English / Traditional Chinese) |
 | **Backend** | FastAPI, SQLAlchemy 2 (async), PostgreSQL (e.g. Neon), Uvicorn |
 | **Realtime** | WebSocket (`/ws/telemetry`) for live telemetry push |
 | **External** | OpenWeather API (wind), LangChain + OpenAI (reports & diagnosis), Google Maps Elevation API (optional) |
@@ -367,6 +367,7 @@ flowchart TB
 | react-router-dom | Routing |
 | @tanstack/react-query | Server state & caching |
 | zustand | Client state (telemetry, UI) |
+| i18next, react-i18next | UI translations (en, zh-TW); see `frontend/src/locales/README.md` |
 | @googlemaps/js-api-loader | Map |
 | @radix-ui/* | Accessible primitives |
 | tailwindcss, tailwind-merge, clsx, cva | Styling |
