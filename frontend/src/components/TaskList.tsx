@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Rocket, Square, Pause, Play, Trash2 } from "lucide-react";
 import type { TaskItem, TaskStatus, AssignmentStatus } from "@/types/task";
+import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 
 const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
   pending: "待命中",
@@ -86,12 +87,10 @@ export default function TaskList({
   };
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <div className="border-b border-border px-3 py-2">
-        <span className="font-display text-xs uppercase tracking-widest text-muted-foreground">
-          任務列表
-        </span>
-      </div>
+    <Panel>
+      <PanelHeader>
+        <PanelTitle>任務列表</PanelTitle>
+      </PanelHeader>
       <ScrollArea className="h-[240px]">
         {tasks.length === 0 ? (
           <div className="p-3 text-xs text-muted-foreground">尚無任務</div>
@@ -115,7 +114,7 @@ export default function TaskList({
               return (
                 <li
                   key={task.id}
-                  className="rounded-md border border-border bg-background/60 p-2 text-xs"
+                  className="rounded-md border border-border-subtle bg-surface-sunken p-2 text-xs"
                 >
                   <div className="flex items-center justify-between gap-2">
                     {onTaskClick ? (
@@ -184,7 +183,7 @@ export default function TaskList({
                     {canCancel && (
                       <Button
                         size="sm"
-                        variant="destructive"
+                        variant="destructive-outline"
                         className="h-6 gap-1 px-2 text-[11px]"
                         onClick={() => handleCancel(task.id)}
                         disabled={busy || !canCancelClick}
@@ -201,7 +200,7 @@ export default function TaskList({
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 gap-1 px-2 text-[11px] text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      className="h-6 gap-1 px-2 text-[11px] text-muted-foreground hover:bg-destructive-subtle hover:text-destructive-text"
                       onClick={() => handleDelete(task.id)}
                       disabled={busy}
                       title="刪除任務"
@@ -216,6 +215,6 @@ export default function TaskList({
           </ul>
         )}
       </ScrollArea>
-    </div>
+    </Panel>
   );
 }

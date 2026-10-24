@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Bot, BrainCircuit, X } from "lucide-react";
 import type { TelemetryPacket } from "@/types/telemetry";
 import AIDiagnosticPanel from "@/components/AIDiagnosticPanel";
+import { PanelTitle } from "@/components/ui/panel";
 
 interface Props {
   telemetry: TelemetryPacket;
@@ -19,21 +20,19 @@ export default function AIFloatingNavigator({ telemetry, isRunning, canGetDiagno
     <div className="absolute left-8 bottom-14 z-10 flex flex-col items-start gap-2">
       {expanded && (
         <div
-          className="flex w-[340px] max-h-[60vh] flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg"
+          className="flex w-[340px] max-h-[60vh] flex-col overflow-hidden rounded-xl border border-border bg-popover shadow-overlay"
           role="dialog"
           aria-label="AI 導航員診斷"
         >
           <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2.5">
             <div className="flex items-center gap-2">
-              <BrainCircuit className="h-4 w-4 shrink-0 text-primary" />
-              <h2 className="font-display text-xs uppercase tracking-widest text-primary">
-                AI 導航員
-              </h2>
+              <BrainCircuit className="h-4 w-4 shrink-0 text-subtle-foreground" />
+              <PanelTitle as="h2">AI 導航員</PanelTitle>
             </div>
             <button
               type="button"
               onClick={toggle}
-              className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="關閉 AI 導航員診斷"
             >
               <X className="h-4 w-4" />
@@ -47,7 +46,7 @@ export default function AIFloatingNavigator({ telemetry, isRunning, canGetDiagno
       <button
         type="button"
         onClick={toggle}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-primary shadow-md transition-colors hover:bg-card hover:border-primary hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-popover text-foreground shadow-raised transition-colors hover:border-border-strong hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={expanded ? "關閉 AI 導航員診斷" : "開啟 AI 導航員診斷"}
         aria-expanded={expanded}
       >

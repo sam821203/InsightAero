@@ -244,19 +244,19 @@ export default function Index() {
   }, [droneIdsForMap, selectedDroneId, dronesForMap]);
 
   return (
-    <div className="grid-bg flex h-screen w-screen flex-col overflow-hidden bg-background">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
       {pageLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <Loader2 className="h-10 w-10 animate-spin" aria-hidden />
-            <span className="font-display text-sm">載入中…</span>
+            <span className="text-sm">載入中…</span>
           </div>
         </div>
       )}
       <header className="flex items-center justify-between border-b border-border bg-card/80 px-5 py-2.5 backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <Satellite className="h-5 w-5 text-primary" />
-          <h1 className="font-display text-lg font-bold tracking-wider text-primary">INSIGHTAERO</h1>
+          <Satellite className="h-5 w-5 text-foreground" />
+          <h1 className="text-base font-semibold tracking-tight text-foreground">INSIGHTAERO</h1>
           <span className="ml-2 text-[10px] uppercase tracking-widest text-muted-foreground">
             Mission Control v1.0
           </span>
@@ -299,7 +299,7 @@ export default function Index() {
                   onAllDroneMarkersMounted={handleAllDroneMarkersMounted}
                 />
               ) : (
-                <div className="flex min-h-[280px] w-full flex-1 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground font-display text-sm">
+                <div className="flex min-h-[280px] w-full flex-1 items-center justify-center rounded-lg border border-border bg-card shadow-raised text-muted-foreground text-sm">
                   取得定位中…
                 </div>
               )}

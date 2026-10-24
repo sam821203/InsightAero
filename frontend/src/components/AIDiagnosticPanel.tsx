@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import type { TelemetryPacket } from "@/types/telemetry";
 import { BrainCircuit } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PanelTitle } from "@/components/ui/panel";
 import { diagnoseSession, diagnoseTelemetry } from "@/api/diagnose";
 import type { ApiError } from "@/api/client";
 
@@ -139,26 +140,26 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
   }, [isRunning]);
 
   const colorMap: Record<LogEntry["type"], string> = {
-    info: "text-primary",
-    warning: "text-warning",
-    status: "text-primary",
-    diagnosis: "text-primary",
+    info: "text-foreground",
+    warning: "text-warning-text",
+    status: "text-muted-foreground",
+    diagnosis: "text-foreground",
   };
 
   return (
-    <div className="flex min-h-[220px] shrink-0 flex-col overflow-hidden bg-card glow-cyan">
+    <div className="flex min-h-[220px] shrink-0 flex-col overflow-hidden bg-card">
       {!hideTitle && (
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-          <BrainCircuit className="h-4 w-4 text-primary" />
-          <h2 className="font-display text-xs uppercase tracking-widest text-primary">AI 導航員</h2>
+          <BrainCircuit className="h-4 w-4 text-subtle-foreground" />
+          <PanelTitle as="h2">AI 導航員</PanelTitle>
         </div>
       )}
 
       <ScrollArea className="flex-1 p-3">
-        <div className="space-y-1.5 font-mono text-[11px] leading-relaxed">
+        <div className="space-y-1.5 text-xs leading-relaxed">
           {logs.map((log) => (
             <div key={log.id} className="flex gap-2">
-              <span className="shrink-0 text-muted-foreground">[{log.time}]</span>
+              <span className="shrink-0 font-mono text-subtle-foreground">{log.time}</span>
               <span
                 className={`${colorMap[log.type]} ${log.type === "diagnosis" ? "whitespace-pre-wrap" : ""}`}
               >
@@ -166,23 +167,20 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
               </span>
             </div>
           ))}
-          {isRunning && <span className="animate-cursor text-primary">▋</span>}
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
 
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-4 py-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground">HEARTBEAT</span>
-          <div
-            className={`h-2.5 w-2.5 rounded-full ${isRunning ? "bg-primary animate-heartbeat" : "bg-muted"}`}
-          />
+          <span className={`h-2 w-2 shrink-0 rounded-full ${isRunning ? "bg-success" : "bg-border-strong"}`} />
+          <span className="text-xs text-muted-foreground">HEARTBEAT</span>
         </div>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="h-7 text-[10px]"
+          className="h-7 text-xs"
           disabled={!canDiagnose || isDiagnosing}
           onClick={handleDiagnose}
         >

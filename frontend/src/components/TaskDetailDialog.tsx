@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchTask, fetchTaskReport, type TaskReportResponse } from "@/hooks/useTasks";
 import type { TaskStatus, AssignmentStatus } from "@/types/task";
+import { PanelTitle } from "@/components/ui/panel";
 
 const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
   pending: "待命中",
@@ -58,7 +59,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-border bg-destructive/5 p-4 text-sm text-destructive">
+      <div className="rounded-lg border border-border border-destructive-border bg-destructive-subtle p-4 text-sm text-destructive-text">
         無法載入報告：{(error as Error).message}
       </div>
     );
@@ -82,8 +83,8 @@ function ReportBlock({ taskId }: { taskId: number }) {
 
   if (report.status === "failed") {
     return (
-      <div className="rounded-lg border border-border bg-destructive/5 p-4 text-sm">
-        <p className="font-medium text-destructive">報告產生失敗</p>
+      <div className="rounded-lg border border-border border-destructive-border bg-destructive-subtle p-4 text-sm">
+        <p className="font-medium text-destructive-text">報告產生失敗</p>
         {report.error_message && (
           <p className="mt-1 text-muted-foreground">{report.error_message}</p>
         )}
@@ -96,9 +97,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <h3 className="mb-2 font-display text-xs uppercase tracking-widest text-muted-foreground">
-        結案報告
-      </h3>
+      <PanelTitle className="mb-2">結案報告</PanelTitle>
       <div className="whitespace-pre-wrap text-sm text-foreground">
         {report.report_text ?? "—"}
       </div>
@@ -154,7 +153,7 @@ export default function TaskDetailDialog({
               <p className="text-sm text-muted-foreground">未選擇任務</p>
             )}
             {enabled && error && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-destructive-text">
                 {(error as Error).message}
               </p>
             )}
@@ -174,9 +173,7 @@ export default function TaskDetailDialog({
                   )}
                 </div>
                 <div className="rounded-lg border border-border bg-card p-4">
-                  <h2 className="font-display text-xs uppercase tracking-widest text-muted-foreground">
-                    指派
-                  </h2>
+                  <PanelTitle as="h2">指派</PanelTitle>
                   <ul className="mt-2 space-y-2">
                     {task.assignments.map((a) => (
                       <li

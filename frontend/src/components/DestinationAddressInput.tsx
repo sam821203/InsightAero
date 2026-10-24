@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { loadGoogleMaps } from "@/utils/geocode";
 import { importLibrary } from "@googlemaps/js-api-loader";
+import { Input } from "@/components/ui/input";
 
 export interface PlaceResult {
   lat: number;
@@ -132,7 +133,7 @@ export default function DestinationAddressInput({
 
   return (
     <div ref={wrapperRef} className="relative flex-1 min-w-0">
-      <input
+      <Input
         id={id}
         type="text"
         value={value}
@@ -145,7 +146,7 @@ export default function DestinationAddressInput({
       />
       {dropdownOpen && suggestions.length > 0 && (
         <ul
-          className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-border bg-background text-foreground shadow-lg py-1 text-sm"
+          className="absolute z-50 mt-1 w-full max-h-48 overflow-auto rounded-md border border-border bg-popover text-popover-foreground shadow-overlay py-1 text-sm"
           role="listbox"
         >
           {suggestions.map((item, i) => (
