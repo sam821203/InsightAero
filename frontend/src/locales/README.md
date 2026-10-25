@@ -3,12 +3,16 @@
 The UI supports English (`en`, default) and Traditional Chinese (`zh-TW`), using [react-i18next](https://react.i18next.com/).
 
 ```
-src/i18n/index.ts        i18next setup, supported languages, persistence
+src/i18n/index.ts        i18next setup, supported languages, language detection
 src/i18n/i18next.d.ts    makes t() keys type-checked against en.ts
 src/locales/en.ts        source of truth
 src/locales/zh-TW.ts     must match en.ts key for key (enforced by the Messages type)
 src/lib/format.ts        locale-aware date and time formatting
 ```
+
+## Language persistence
+
+`i18next-browser-languagedetector` reads and saves the choice under the `insightaero-language` localStorage key. Only a saved choice is used, so first-time visitors get English. To follow the browser language instead, add `"navigator"` to `detection.order` in `src/i18n/index.ts`.
 
 ## Adding a string
 
