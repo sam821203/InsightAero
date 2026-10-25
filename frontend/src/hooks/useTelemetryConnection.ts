@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { TelemetryPacket } from "@/types/telemetry";
 import { useTelemetryStore } from "@/stores/telemetryStore";
+import { queryKeys } from "@/api/queryKeys";
 
 const WS_URL =
   import.meta.env.VITE_WS_BASE_URL ??
@@ -75,7 +76,7 @@ export function useTelemetryConnection() {
           if (queue.length > 0) flush();
           clearPathsAndIdle();
           if (typeof data.task_id === "number") {
-            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
           }
           return;
         }
