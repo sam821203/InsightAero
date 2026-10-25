@@ -10,6 +10,32 @@ const en = {
     locate: "Locate",
     locating: "Locating…",
     droneFallback: "Drone {{id}}",
+    retry: "Retry",
+  },
+  errors: {
+    unreachable: "Can't reach the server. Check that the backend is running.",
+    http: "The server returned an error (HTTP {{status}}).",
+    unknown: "Something went wrong. Try again.",
+    task: {
+      create: "Couldn't create the mission",
+      start: "Couldn't start the mission",
+      pause: "Couldn't pause the mission",
+      resume: "Couldn't resume the mission",
+      cancel: "Couldn't stop the mission",
+      delete: "Couldn't delete the mission",
+    },
+  },
+  backend: {
+    unreachableTitle: "Backend unreachable.",
+    unreachableHint: "Data on screen may be out of date. Retrying every 10 seconds.",
+  },
+  connection: {
+    connecting: "Connecting",
+    open: "Live",
+    reconnecting: "Reconnecting",
+    connectingHint: "Connecting to the live telemetry stream…",
+    openHint: "Receiving live telemetry.",
+    reconnectingHint: "The live telemetry stream dropped. Trying to reconnect.",
   },
   app: {
     tagline: "Drone mission monitoring",
@@ -104,6 +130,8 @@ const en = {
   tasks: {
     title: "Missions",
     empty: "No missions yet",
+    emptyHint: "Create a mission to send drones to a destination.",
+    loadFailed: "Couldn't load missions",
     untitled: "Mission #{{id}}",
     start: "Start",
     pause: "Pause",
@@ -117,7 +145,6 @@ const en = {
     fallbackTitle: "Mission details",
     noSelection: "No mission selected",
     loading: "Loading mission…",
-    status: "Status: {{status}}",
     createdAt: "Created {{date}}",
     assignments: "Assignments",
     report: {
@@ -138,7 +165,12 @@ const en = {
     namePlaceholder: "Drone name",
     nameShort: "Name",
     speedPlaceholder: "Speed",
-    empty: "No drones yet. Select Add to create one.",
+    empty: "No drones yet",
+    emptyHint: "Add a drone to start assigning missions.",
+    addDrone: "Add drone",
+    loadFailed: "Couldn't load drones",
+    addFailed: "Couldn't add the drone",
+    saveFailed: "Couldn't save the drone",
     cannotDeleteFlying: "Can't delete a drone in flight",
     deleteDialogTitle: "Delete drone",
     deleteDialogDescription:
@@ -150,6 +182,9 @@ const en = {
   sessions: {
     title: "Flight history",
     empty: "No flights yet",
+    emptyHint: "Finished flights will show up here.",
+    loadFailed: "Couldn't load flight history",
+    pathFailed: "Couldn't load the flight path",
     fallbackName: "Flight {{id}}",
     hint: "Select a flight to show its path on the map.",
   },

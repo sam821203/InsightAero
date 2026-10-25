@@ -39,6 +39,9 @@ import type { TaskItem } from "@/types/task";
 import { useTasks } from "@/hooks/useTasks";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import ConnectionIndicator from "@/components/ConnectionIndicator";
+import BackendStatusBanner from "@/components/BackendStatusBanner";
+import { isBackendUnreachable } from "@/api/client";
 
 const ACTIVE_TASK_STATUSES = ["pending", "starting", "running", "paused"] as const;
 
@@ -73,6 +76,9 @@ export default function Index() {
   const {
     tasks,
     loading: tasksLoading,
+    loadError: tasksLoadError,
+    refetching: tasksRefetching,
+    fetchTasks,
     createTask,
     startTask,
     pauseTask,
@@ -287,6 +293,7 @@ export default function Index() {
         </div>
 
         <div className="flex items-center gap-2">
+          <ConnectionIndicator />
           <LanguageSwitcher />
           <Button
             variant="ghost"
@@ -299,6 +306,7 @@ export default function Index() {
           </Button>
         </div>
       </header>
+      {isBackendUnreachable(tasksLoadError) && <BackendStatusBanner />}
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -377,7 +385,9 @@ export default function Index() {
               <TabsContent value="missions" forceMount className="flex min-h-0 flex-1 flex-col">
                 <PanelHeader>
                   <span className="text-xs text-muted-foreground">
-                    {t("sidebar.activeCount", { count: activeTasks.length })}
+                    {tasks.length > 0 || (!tasksLoading && !tasksLoadError)
+                      ? t("sidebar.activeCount", { count: activeTasks.length })
+                      : null}
                   </span>
                   <Button size="sm" className="h-7 gap-1 px-2.5 text-xs" onClick={() => setCreateOpen(true)}>
                     <Plus className="h-3.5 w-3.5" aria-hidden />
@@ -393,6 +403,11 @@ export default function Index() {
                   onCancel={handleCancelTask}
                   onDelete={handleDeleteTask}
                   onTaskClick={(id) => setSelectedTaskId(id)}
+                  loading={tasksLoading}
+                  loadError={tasksLoadError}
+                  onRetry={() => fetchTasks()}
+                  retrying={tasksRefetching}
+                  onCreate={() => setCreateOpen(true)}
                 />
               </TabsContent>
 

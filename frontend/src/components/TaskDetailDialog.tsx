@@ -11,6 +11,8 @@ import { fetchTask, fetchTaskReport, type TaskReportResponse } from "@/hooks/use
 import { PanelTitle } from "@/components/ui/panel";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/lib/format";
+import { errorMessage } from "@/lib/errorMessage";
+import { AssignmentStatusBadge, TaskStatusBadge } from "@/components/StatusBadge";
 
 function ReportBlock({ taskId }: { taskId: number }) {
   const { t, i18n } = useTranslation();
@@ -43,7 +45,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
   if (error) {
     return (
       <div className="rounded-lg border border-border border-destructive-border bg-destructive-subtle p-4 text-sm text-destructive-text">
-        {t("taskDetail.report.loadFailed", { message: (error as Error).message })}
+        {t("taskDetail.report.loadFailed", { message: errorMessage(error, t) })}
       </div>
     );
   }
@@ -133,8 +135,8 @@ export default function TaskDetailDialog({
               <p className="text-sm text-muted-foreground">{t("taskDetail.noSelection")}</p>
             )}
             {enabled && error && (
-              <p className="text-sm text-destructive-text">
-                {(error as Error).message}
+              <p role="alert" className="text-sm text-destructive-text">
+                {errorMessage(error, t)}
               </p>
             )}
             {enabled && isLoading && (
@@ -143,11 +145,9 @@ export default function TaskDetailDialog({
             {enabled && task != null && (
               <>
                 <div className="rounded-lg border border-border bg-card p-4">
-                  <p className="text-sm text-muted-foreground">
-                    {t("taskDetail.status", { status: t(`status.task.${task.status}`) })}
-                  </p>
+                  <TaskStatusBadge status={task.status} />
                   {task.created_at && (
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-2 text-xs text-muted-foreground">
                       {t("taskDetail.createdAt", { date: formatDateTime(task.created_at, i18n.language) })}
                     </p>
                   )}
@@ -163,9 +163,7 @@ export default function TaskDetailDialog({
                         <span className="font-medium">
                           {a.drone_name ?? t("common.droneFallback", { id: a.drone_id })}
                         </span>
-                        <span className="text-muted-foreground">
-                          {t(`status.assignment.${a.status}`)}
-                        </span>
+                        <AssignmentStatusBadge status={a.status} />
                         <span className="text-muted-foreground">
                           ({a.start_lat.toFixed(4)}, {a.start_lng.toFixed(4)}) → (
                           {a.dest_lat.toFixed(4)}, {a.dest_lng.toFixed(4)})

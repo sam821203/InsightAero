@@ -30,7 +30,7 @@ export function useTelemetryConnection() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const { ingest, setConnected, clearPathsAndIdle } = useTelemetryStore.getState();
+    const { ingest, setConnection, clearPathsAndIdle } = useTelemetryStore.getState();
     let socket: WebSocket | null = null;
     let retryTimer: number | undefined;
     let attempt = 0;
@@ -60,7 +60,7 @@ export function useTelemetryConnection() {
 
       socket.onopen = () => {
         attempt = 0;
-        setConnected(true);
+        setConnection("open");
       };
 
       socket.onmessage = (event) => {
@@ -84,8 +84,8 @@ export function useTelemetryConnection() {
       };
 
       socket.onclose = () => {
-        setConnected(false);
         if (disposed) return;
+        setConnection("reconnecting");
         const delay = Math.min(RECONNECT_BASE_MS * 2 ** attempt, RECONNECT_MAX_MS);
         attempt += 1;
         retryTimer = window.setTimeout(connect, delay);

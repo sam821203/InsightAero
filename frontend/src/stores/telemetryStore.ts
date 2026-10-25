@@ -29,18 +29,21 @@ export const DEFAULT_TELEMETRY: TelemetryPacket = {
   timestamp: 0,
 };
 
+export type ConnectionState = "connecting" | "open" | "reconnecting";
+
 interface TelemetryState {
   byDrone: TelemetryByDrone;
   pathByDrone: FlightPathByDrone;
   selectedDroneId: number;
   runState: RunState;
-  connected: boolean;
+  /** Telemetry WebSocket state. "reconnecting" means it dropped and is retrying. */
+  connection: ConnectionState;
 
   /** Apply a batch of packets in one update (one re-render for subscribers). */
   ingest: (packets: TelemetryPacket[]) => void;
   selectDrone: (droneId: number) => void;
   setRunState: (runState: RunState) => void;
-  setConnected: (connected: boolean) => void;
+  setConnection: (connection: ConnectionState) => void;
   /** Drop trails and go idle, keeping the last packets so markers don't jump. */
   clearPathsAndIdle: () => void;
 }
@@ -77,7 +80,7 @@ export const useTelemetryStore = create<TelemetryState>((set) => ({
   pathByDrone: {},
   selectedDroneId: LEGACY_DRONE_KEY,
   runState: "idle",
-  connected: false,
+  connection: "connecting",
 
   ingest: (packets) =>
     set((state) => {
@@ -102,7 +105,7 @@ export const useTelemetryStore = create<TelemetryState>((set) => ({
 
   selectDrone: (selectedDroneId) => set({ selectedDroneId }),
   setRunState: (runState) => set({ runState }),
-  setConnected: (connected) => set({ connected }),
+  setConnection: (connection) => set({ connection }),
   clearPathsAndIdle: () => set({ pathByDrone: {}, runState: "idle" }),
 }));
 

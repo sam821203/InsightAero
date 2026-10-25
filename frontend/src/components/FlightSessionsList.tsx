@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { History } from "lucide-react";
+import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { FlightPathPoint } from "@/types/telemetry";
 import {
@@ -9,6 +11,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { formatShortDateTime } from "@/lib/format";
+import { errorMessage } from "@/lib/errorMessage";
+import { ListEmpty, ListError, ListLoading } from "@/components/ListState";
 
 interface Props {
   onSelectSession: (sessionId: number, path: FlightPathPoint[]) => void;
@@ -19,22 +23,32 @@ export default function FlightSessionsList({ onSelectSession, className }: Props
   const { t, i18n } = useTranslation();
   const [sessions, setSessions] = useState<FlightSessionItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<unknown>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const load = useCallback((isCancelled: () => boolean = () => false) => {
+    setLoading(true);
+    fetchFlightSessions({ limit: 30 })
+      .then((data) => {
+        if (isCancelled()) return;
+        setSessions(data);
+        setLoadError(null);
+      })
+      .catch((error) => {
+        if (!isCancelled()) setLoadError(error);
+      })
+      .finally(() => {
+        if (!isCancelled()) setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    fetchFlightSessions({ limit: 30 })
-      .then((data) => {
-        if (!cancelled) setSessions(data);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    load(() => cancelled);
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [load]);
 
   const handleClick = (sessionId: number) => {
     setSelectedId(sessionId);
@@ -43,7 +57,10 @@ export default function FlightSessionsList({ onSelectSession, className }: Props
         const path: FlightPathPoint[] = rows.map((p) => ({ lat: p.lat, lng: p.lng }));
         onSelectSession(sessionId, path);
       })
-      .catch(() => {});
+      .catch((error) => {
+        setSelectedId(null);
+        toast.error(t("sessions.pathFailed"), { description: errorMessage(error, t) });
+      });
   };
 
   const formatTime = (iso: string | null) => {
@@ -53,14 +70,18 @@ export default function FlightSessionsList({ onSelectSession, className }: Props
 
   return (
     <div className={cn("flex min-h-0 flex-col", className)}>
-      <p className="border-b border-border-subtle px-3 py-2.5 text-xs text-muted-foreground">
-        {t("sessions.hint")}
-      </p>
+      {sessions.length > 0 && (
+        <p className="border-b border-border-subtle px-3 py-2.5 text-xs text-muted-foreground">
+          {t("sessions.hint")}
+        </p>
+      )}
       <ScrollArea className="min-h-0 flex-1">
-        {loading ? (
-          <div className="p-3 text-xs text-muted-foreground">{t("common.loading")}</div>
+        {sessions.length === 0 && loading ? (
+          <ListLoading />
+        ) : sessions.length === 0 && loadError != null ? (
+          <ListError title={t("sessions.loadFailed")} error={loadError} onRetry={() => load()} retrying={loading} />
         ) : sessions.length === 0 ? (
-          <div className="p-3 text-xs text-muted-foreground">{t("sessions.empty")}</div>
+          <ListEmpty icon={<History aria-hidden />} title={t("sessions.empty")} description={t("sessions.emptyHint")} />
         ) : (
           <ul className="p-2 space-y-1">
             {sessions.map((s) => (
