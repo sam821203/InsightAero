@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Rocket, Square, Pause, Play, Trash2, ClipboardList, Plus } from "lucide-react";
 import type { TaskItem } from "@/types/task";
 import { cn } from "@/lib/utils";
-import { AssignmentStatusBadge, TaskStatusBadge } from "@/components/StatusBadge";
-import { ListEmpty, ListError, ListLoading } from "@/components/ListState";
+import { AssignmentStatusBadge, TaskStatusBadge } from "@/components/status-badge";
+import { ListEmpty, ListError, ListLoading } from "@/components/list-state";
 import { useTranslation } from "react-i18next";
 
 interface TaskListProps {

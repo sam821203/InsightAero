@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/api/queryKeys";
+import { queryKeys } from "@/api/query-keys";
 import { retryWhileFailing } from "@/lib/query";
 import type { FlightPathPoint } from "@/types/telemetry";
 import { getFlightSessions, getSessionTelemetry, type FlightSessionItem } from "./flight-history.api";

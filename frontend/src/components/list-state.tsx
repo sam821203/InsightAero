@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { AlertTriangle, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { errorMessage } from "@/lib/errorMessage";
+import { errorMessage } from "@/lib/error-message";
 
 /** Placeholder rows shaped like list items, shown while a list loads for the first time. */
 export function ListLoading({ rows = 3, label }: { rows?: number; label?: string }) {

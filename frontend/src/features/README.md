@@ -25,7 +25,7 @@ Only add the folders a feature needs.
   flight history to the map).
 - **Data read by several features stays shared.** Drones are listed by fleet,
   missions and the map, so reading them (`api/drones.api.ts` + `api/drones.queries.ts`)
-  is shared, while drone writes live in `features/fleet/api/`. Query keys stay in `api/queryKeys.ts`
+  is shared, while drone writes live in `features/fleet/api/`. Query keys stay in `api/query-keys.ts`
   so any feature can invalidate them.
 - **Import files directly**, not through `index.ts` barrels (barrels hurt Vite's
   tree shaking and create import cycles).
@@ -58,6 +58,7 @@ The shared `src/api/` folder uses the same pair, named after the resource
 All files and folders are kebab-case, as in bulletproof-react
 (`fleet-list.tsx`, `use-user-location.ts`). What a file exports keeps its
 normal casing (`export default function FleetList`, `export function useDrones`).
+`npm run lint:filenames` checks this.
 
 ## Status
 

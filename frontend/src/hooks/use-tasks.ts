@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { errorMessage } from "@/lib/errorMessage";
+import { errorMessage } from "@/lib/error-message";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TaskItem, TaskCreateBody } from "@/types/task";
-import { queryKeys } from "@/api/queryKeys";
+import { queryKeys } from "@/api/query-keys";
 import { retryWhileFailing } from "@/lib/query";
 import {
   fetchTask as apiFetchTask,

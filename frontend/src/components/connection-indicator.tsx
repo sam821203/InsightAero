@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useTelemetryStore, type ConnectionState } from "@/stores/telemetryStore";
+import { useTelemetryStore, type ConnectionState } from "@/stores/telemetry-store";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 

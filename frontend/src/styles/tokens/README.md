@@ -208,7 +208,7 @@ A nominal value stays neutral; color only appears when something needs attention
 
 ```ts
 import { readColorToken, readHexToken } from "@/lib/tokens";
-import { useTheme } from "@/contexts/useTheme";
+import { useTheme } from "@/contexts/use-theme";
 
 const { theme } = useTheme();
 

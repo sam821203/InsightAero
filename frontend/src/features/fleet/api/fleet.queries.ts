@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/api/queryKeys";
+import { queryKeys } from "@/api/query-keys";
 import { createDrone, deleteDrone, updateDrone, type DroneCreateBody, type DroneUpdateBody } from "./fleet.api";
 
 /** Every fleet write refreshes the shared drone list (map, mission form, fleet tab). */

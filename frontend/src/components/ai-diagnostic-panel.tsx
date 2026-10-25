@@ -11,7 +11,7 @@ import {
   selectHasLiveTelemetry,
   selectIsRunning,
   useTelemetryStore,
-} from "@/stores/telemetryStore";
+} from "@/stores/telemetry-store";
 import { useTranslation } from "react-i18next";
 import { formatClockTime } from "@/lib/format";
 import type { Messages } from "@/locales/types";

@@ -1,11 +1,11 @@
 import type { ComponentProps } from "react";
-import GoogleMapView from "@/components/GoogleMapView";
+import GoogleMapView from "@/components/google-map-view";
 import {
   liveDroneIdsOf,
   selectActivePath,
   selectActiveTelemetry,
   useTelemetryStore,
-} from "@/stores/telemetryStore";
+} from "@/stores/telemetry-store";
 
 type LiveProps =
   | "telemetryByDrone"

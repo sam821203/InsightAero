@@ -39,7 +39,7 @@ Delete any section that does not apply.
 <!-- Run from frontend/. -->
 
 - [ ] `npm run build` passes
-- [ ] `npm run lint:tokens` passes
+- [ ] `npm run lint:tokens` and `npm run lint:filenames` pass
 - [ ] No new TypeScript errors
 - [ ] Checked in both light and dark themes (UI changes)
 

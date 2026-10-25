@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Trash2 } from "lucide-react";
-import DestinationAddressInput from "@/components/DestinationAddressInput";
+import DestinationAddressInput from "@/components/destination-address-input";
 import { geocodeAddress } from "@/utils/geocode";
 import type { TaskCreateBody, TaskCreateAssignmentInput } from "@/types/task";
 import { useDrones } from "@/api/drones.queries";

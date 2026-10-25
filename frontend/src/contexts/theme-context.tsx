@@ -1,8 +1,8 @@
 import React, { useEffect, useState, type ReactNode } from "react";
-import { getStoredTheme, setStoredTheme, type Theme } from "./themeStorage";
-import { ThemeContext } from "./useTheme";
+import { getStoredTheme, setStoredTheme, type Theme } from "./theme-storage";
+import { ThemeContext } from "./use-theme";
 
-export type { Theme } from "./themeStorage";
+export type { Theme } from "./theme-storage";
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
