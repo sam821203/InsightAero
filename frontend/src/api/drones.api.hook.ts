@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { fetchDrones, type DroneResponse } from "./drones";
+import { fetchDrones, type DroneResponse } from "./drones.api";
 import { queryKeys } from "./queryKeys";
 import { retryWhileFailing } from "@/lib/query";
 

@@ -2,9 +2,9 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Panel } from "@/components/ui/panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ResizableSidebar from "@/components/layouts/ResizableSidebar";
-import FleetList from "@/features/fleet/components/FleetList";
-import FlightHistoryList from "@/features/flight-history/components/FlightHistoryList";
+import ResizableSidebar from "@/components/layouts/resizable-sidebar";
+import FleetList from "@/features/fleet/components/fleet-list";
+import FlightHistoryList from "@/features/flight-history/components/flight-history-list";
 import type { FlightPathPoint } from "@/types/telemetry";
 
 export type SidebarTab = "missions" | "fleet" | "history";

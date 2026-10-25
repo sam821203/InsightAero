@@ -13,10 +13,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Plane } from "lucide-react";
 import { toast } from "sonner";
-import type { DroneResponse } from "@/api/drones";
+import type { DroneResponse } from "@/api/drones.api";
 import type { ApiError } from "@/api/client";
-import { useDrones } from "@/api/useDrones";
-import { useCreateDrone, useDeleteDrone, useUpdateDrone } from "@/features/fleet/api/useDroneMutations";
+import { useDrones } from "@/api/drones.api.hook";
+import { useCreateDrone, useDeleteDrone, useUpdateDrone } from "@/features/fleet/api/fleet.api.hook";
 import { PanelHeader } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";

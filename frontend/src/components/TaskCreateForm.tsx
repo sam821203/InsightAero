@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 import DestinationAddressInput from "@/components/DestinationAddressInput";
 import { geocodeAddress } from "@/utils/geocode";
 import type { TaskCreateBody, TaskCreateAssignmentInput } from "@/types/task";
-import { useDrones } from "@/api/useDrones";
+import { useDrones } from "@/api/drones.api.hook";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import type { Messages } from "@/locales/types";

@@ -3,7 +3,7 @@ import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/api/queryKeys";
 import { retryWhileFailing } from "@/lib/query";
 import type { FlightPathPoint } from "@/types/telemetry";
-import { getFlightSessions, getSessionTelemetry, type FlightSessionItem } from "./flightSessions";
+import { getFlightSessions, getSessionTelemetry, type FlightSessionItem } from "./flight-history.api";
 
 const SESSIONS_STALE_MS = 30_000;
 const PATH_POINT_LIMIT = 2000;

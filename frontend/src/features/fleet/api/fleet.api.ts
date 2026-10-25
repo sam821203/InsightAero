@@ -1,5 +1,5 @@
 import { apiFetch } from "@/api/client";
-import type { DroneResponse } from "@/api/drones";
+import type { DroneResponse } from "@/api/drones.api";
 
 export interface DroneCreateBody {
   name: string;
