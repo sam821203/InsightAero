@@ -87,11 +87,7 @@ export default function Index() {
     deleteTask,
   } = useTasks({ limit: 30 });
 
-  const droneRefreshTrigger = useMemo(
-    () => tasks.map((t) => `${t.id}:${t.status}`).sort().join(","),
-    [tasks]
-  );
-  const { drones: dronesForMap, loading: dronesApiLoading } = useDrones(droneRefreshTrigger);
+  const { drones: dronesForMap, loading: dronesApiLoading } = useDrones();
 
   const startResize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -412,7 +408,7 @@ export default function Index() {
               </TabsContent>
 
               <TabsContent value="fleet" forceMount className="flex min-h-0 flex-1 flex-col">
-                <MyDronesList className="flex-1" refreshTrigger={droneRefreshTrigger} />
+                <MyDronesList className="flex-1" />
               </TabsContent>
 
               <TabsContent value="history" forceMount className="flex min-h-0 flex-1 flex-col">
@@ -440,7 +436,6 @@ export default function Index() {
               setSidebarTab("missions");
             }}
             onAddressError={() => setAddressErrorOpen(true)}
-            refreshTrigger={droneRefreshTrigger}
             excludeDroneIds={droneIdsInActiveTasks}
           />
         </DialogContent>

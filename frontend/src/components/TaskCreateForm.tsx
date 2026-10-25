@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Trash2 } from "lucide-react";
 import DestinationAddressInput from "@/components/DestinationAddressInput";
 import { geocodeAddress } from "@/utils/geocode";
 import type { TaskCreateBody, TaskCreateAssignmentInput } from "@/types/task";
-import { fetchDrones, type DroneResponse } from "@/api/drones";
+import { useDrones } from "@/hooks/useDrones";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import type { Messages } from "@/locales/types";
@@ -19,8 +19,6 @@ export interface TaskCreateFormProps {
   onCreate: (body: TaskCreateBody) => Promise<unknown>;
   onSuccess?: () => void;
   onAddressError?: () => void;
-  /** 當此值變動時會重新取得無人機列表（任務狀態變更後，可選的「待命」無人機會同步） */
-  refreshTrigger?: string;
   /** 已被其他進行中任務占用的無人機 ID，這些無人機不顯示於指派選單 */
   excludeDroneIds?: Set<number>;
 }
@@ -44,11 +42,11 @@ export default function TaskCreateForm({
   onCreate,
   onSuccess,
   onAddressError,
-  refreshTrigger,
   excludeDroneIds,
 }: TaskCreateFormProps) {
   const { t } = useTranslation();
-  const [drones, setDrones] = useState<DroneResponse[]>([]);
+  // Shared cache: stays in sync with the fleet list and the map without refetching here.
+  const { drones } = useDrones();
   const [name, setName] = useState("");
   const [droneIds, setDroneIds] = useState<number[]>([0]);
 
@@ -65,16 +63,6 @@ export default function TaskCreateForm({
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<FormError | null>(null);
-
-  useEffect(() => {
-    fetchDrones().then(setDrones).catch(() => setDrones([]));
-  }, []);
-
-  useEffect(() => {
-    if (refreshTrigger != null) {
-      fetchDrones().then(setDrones).catch(() => setDrones([]));
-    }
-  }, [refreshTrigger]);
 
   const idleDrones = drones.filter((d) => d.status === "idle");
   const exclude = excludeDroneIds ?? new Set<number>();

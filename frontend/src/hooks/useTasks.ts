@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { errorMessage } from "@/lib/errorMessage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TaskItem, TaskCreateBody } from "@/types/task";
+import { queryKeys } from "@/api/queryKeys";
+import { retryWhileFailing } from "@/lib/query";
 import {
   fetchTask as apiFetchTask,
   fetchTaskReport as apiFetchTaskReport,
@@ -19,8 +21,7 @@ import {
 
 export type { TaskReportResponse } from "@/api/tasks";
 
-const TASKS_QUERY_KEY = ["tasks"] as const;
-const RETRY_WHILE_FAILING_MS = 10_000;
+const TASKS_QUERY_KEY = queryKeys.tasks.all;
 
 type ActionKey = "create" | "start" | "pause" | "resume" | "cancel" | "delete";
 
@@ -66,7 +67,8 @@ export function useTasks(params?: {
     queryFn: () => apiFetchTasks(params),
     refetchInterval: (query) => {
       // Keep trying while the list can't load, so it recovers on its own when the backend is back.
-      if (query.state.status === "error") return RETRY_WHILE_FAILING_MS;
+      const retry = retryWhileFailing(query);
+      if (retry) return retry;
       const tasks = (query.state.data ?? []) as TaskItem[];
       const hasRunningOrStarting = tasks.some(
         (t) => t.status === "running" || t.status === "starting"
@@ -74,6 +76,26 @@ export function useTasks(params?: {
       return hasRunningOrStarting ? 5000 : false;
     },
   });
+
+  /*
+   * Mission status drives drone status (flying / idle) and creates flight
+   * records, so when any mission's status changes, drones and flight history
+   * are refetched. This covers our own actions, the 5s polling and the
+   * WebSocket "arrived" event, since all of them end in a new task list.
+   */
+  const statusSignature = useMemo(
+    () => (data ?? []).map((task) => `${task.id}:${task.status}`).sort().join(","),
+    [data]
+  );
+  const previousSignature = useRef<string | null>(null);
+  useEffect(() => {
+    if (data == null) return;
+    const previous = previousSignature.current;
+    previousSignature.current = statusSignature;
+    if (previous == null || previous === statusSignature) return;
+    queryClient.invalidateQueries({ queryKey: queryKeys.drones.all });
+    queryClient.invalidateQueries({ queryKey: queryKeys.flightSessions.all });
+  }, [data, statusSignature, queryClient]);
 
   const invalidateTasks = () => queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
 

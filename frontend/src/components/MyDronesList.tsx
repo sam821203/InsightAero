@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,14 +13,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Plane } from "lucide-react";
 import { toast } from "sonner";
-import {
-  fetchDrones,
-  createDrone,
-  updateDrone,
-  deleteDrone,
-  type DroneResponse,
-} from "@/api/drones";
+import type { DroneResponse } from "@/api/drones";
 import type { ApiError } from "@/api/client";
+import { useDroneMutations, useDrones } from "@/hooks/useDrones";
 import { PanelHeader } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -33,51 +28,31 @@ import { errorMessage } from "@/lib/errorMessage";
 type DeleteError = { key: "deleteBlocked" | "deleteFailed" } | { message: string };
 
 interface MyDronesListProps {
-  /** 當此值變動時會重新取得無人機列表（例如任務開始/取消/完成後，管理區塊的「待命/飛行中」會同步） */
-  refreshTrigger?: string;
   className?: string;
 }
 
-export default function MyDronesList({ refreshTrigger, className }: MyDronesListProps) {
+export default function MyDronesList({ className }: MyDronesListProps) {
   const { t } = useTranslation();
-  const [drones, setDrones] = useState<DroneResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<unknown>(null);
-  const [adding, setAdding] = useState(false);
+  const { drones, loading, refetching, loadError, refetch } = useDrones();
+  const { create, update, remove } = useDroneMutations();
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState("");
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [editSpeed, setEditSpeed] = useState("");
-  const [savingEdit, setSavingEdit] = useState(false);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState<DeleteError | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
-  const loadDrones = () => {
-    setLoading(true);
-    fetchDrones()
-      .then((data) => {
-        setDrones(data);
-        setLoadError(null);
-      })
-      .catch(setLoadError)
-      .finally(() => setLoading(false));
-  };
+  const adding = create.isPending;
+  const savingEdit = update.isPending;
+  const deleting = remove.isPending;
 
   const notifyFailure = (titleKey: "addFailed" | "saveFailed") => (error: unknown) => {
     toast.error(t(`drones.${titleKey}`), { description: errorMessage(error, t) });
   };
-
-  useEffect(() => {
-    loadDrones();
-  }, []);
-
-  useEffect(() => {
-    if (refreshTrigger != null) loadDrones();
-  }, [refreshTrigger]);
 
   const startEdit = (d: DroneResponse) => {
     setEditingId(d.id);
@@ -97,14 +72,10 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
     const speed = parseFloat(editSpeed);
     if (!name || name.length > 128) return;
     if (Number.isNaN(speed) || speed <= 0) return;
-    setSavingEdit(true);
-    updateDrone(editingId, { name, base_speed_m_min: speed })
-      .then(() => {
-        cancelEdit();
-        loadDrones();
-      })
-      .catch(notifyFailure("saveFailed"))
-      .finally(() => setSavingEdit(false));
+    update.mutate(
+      { id: editingId, body: { name, base_speed_m_min: speed } },
+      { onSuccess: cancelEdit, onError: notifyFailure("saveFailed") }
+    );
   };
 
   const openDeleteConfirm = (id: number) => {
@@ -119,36 +90,33 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
 
   const handleDelete = () => {
     if (deleteConfirmId == null) return;
-    setDeleting(true);
     setDeleteError(null);
-    deleteDrone(deleteConfirmId)
-      .then(() => {
-        closeDeleteConfirm();
-        loadDrones();
-      })
-      .catch((e) => {
+    remove.mutate(deleteConfirmId, {
+      onSuccess: closeDeleteConfirm,
+      onError: (e) => {
         const err = e as ApiError;
         if (err.status === 409) {
           setDeleteError(err.detail ? { message: err.detail } : { key: "deleteBlocked" });
         } else {
           setDeleteError({ key: "deleteFailed" });
         }
-      })
-      .finally(() => setDeleting(false));
+      },
+    });
   };
 
   const handleAdd = () => {
     const name = newName.trim();
     if (!name) return;
-    setAdding(true);
-    createDrone({ name })
-      .then(() => {
-        setNewName("");
-        setShowAddForm(false);
-        loadDrones();
-      })
-      .catch(notifyFailure("addFailed"))
-      .finally(() => setAdding(false));
+    create.mutate(
+      { name },
+      {
+        onSuccess: () => {
+          setNewName("");
+          setShowAddForm(false);
+        },
+        onError: notifyFailure("addFailed"),
+      }
+    );
   };
 
   return (
@@ -206,7 +174,7 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
         {drones.length === 0 && loading ? (
           <ListLoading />
         ) : drones.length === 0 && loadError != null ? (
-          <ListError title={t("drones.loadFailed")} error={loadError} onRetry={loadDrones} retrying={loading} />
+          <ListError title={t("drones.loadFailed")} error={loadError} onRetry={() => refetch()} retrying={refetching} />
         ) : drones.length === 0 ? (
           <ListEmpty
             icon={<Plane aria-hidden />}
