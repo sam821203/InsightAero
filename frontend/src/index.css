@@ -28,9 +28,12 @@
 }
 
 @layer utilities {
-  /* Google Maps drone overlay: the dark theme recolors the SVG icon */
-  .drone-marker--dark img {
-    filter: hue-rotate(160deg) saturate(1.1) brightness(1.1);
+  /* Google Maps drone overlay: a tight halo in the map's contrast color keeps
+     the icon readable on any base map, in both themes, without recoloring it. */
+  .drone-marker img {
+    filter: drop-shadow(0 0 1px hsl(var(--color-map-marker-halo)))
+      drop-shadow(0 0 1px hsl(var(--color-map-marker-halo)))
+      drop-shadow(0 2px 4px hsl(var(--color-map-route-casing) / 0.45));
   }
 
   /* Selected drone: a quiet accent ring, no glow */
@@ -47,8 +50,9 @@
     width: 96px;
     height: 96px;
     border-radius: 50%;
-    border: 2px solid hsl(var(--color-accent));
-    background: hsl(var(--color-accent) / 0.12);
+    border: 2px solid hsl(var(--color-map-route-active));
+    background: hsl(var(--color-map-route-active) / 0.18);
+    box-shadow: 0 0 0 2px hsl(var(--color-map-route-casing) / 0.6);
     pointer-events: none;
     z-index: 0;
   }

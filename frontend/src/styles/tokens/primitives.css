@@ -72,6 +72,19 @@
   --amber-900: 22 70% 18%;
   --amber-950: 22 65% 11%;
 
+  /* Steel: desaturated blue for map water */
+  --steel-100: 208 24% 88%;
+  --steel-200: 208 22% 81%;
+  --steel-800: 212 22% 17%;
+  --steel-900: 214 24% 13%;
+  --steel-950: 216 30% 5%;
+
+  /* Sage: desaturated green for map parks */
+  --sage-100: 140 14% 90%;
+  --sage-200: 140 12% 84%;
+  --sage-800: 150 10% 15%;
+  --sage-900: 152 12% 12%;
+
   /* Red: critical / danger */
   --red-50: 0 90% 97%;
   --red-100: 0 90% 93%;

@@ -16,9 +16,6 @@ const SRC = join(ROOT, "src");
 const TOKENS = join(SRC, "styles/tokens");
 
 const HEX_ALLOWLIST = new Set([
-  /* Google Maps base map styles still use hex; moved to tokens in the map-style PR. */
-  "src/components/GoogleMapView.tsx",
-  "src/hooks/useDroneMap.ts",
   /* The CSS-to-JS bridge itself builds color strings from token values. */
   "src/lib/tokens.ts",
 ]);
