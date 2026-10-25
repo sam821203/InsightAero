@@ -51,7 +51,7 @@ function isActiveTask(task: TaskItem): boolean {
 
 type SidebarTab = "missions" | "fleet" | "history";
 
-export default function Index() {
+export default function DashboardRoute() {
   const { t } = useTranslation();
   const [historyPath, setHistoryPath] = useState<FlightPathPoint[] | null>(null);
   const [isResizing, setIsResizing] = useState(false);

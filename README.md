@@ -46,44 +46,24 @@ InsightAero/
 │   │   ├── drone-marker.svg
 │   │   └── map-marker-flag-icon.svg
 │   └── src/
-│       ├── main.tsx
-│       ├── App.tsx
+│       ├── main.tsx          # entry: fonts, i18n, global CSS, <App />
 │       ├── index.css
-│       ├── api/
-│       │   ├── client.ts
-│       │   ├── drones.ts
-│       │   ├── tasks.ts
-│       │   ├── simulation.ts
-│       │   ├── flightSessions.ts
-│       │   └── diagnose.ts
-│       ├── components/
-│       │   ├── GoogleMapView.tsx
-│       │   ├── TelemetryHUD.tsx
-│       │   ├── AIDiagnosticPanel.tsx
-│       │   ├── TaskCreateForm.tsx
-│       │   ├── MyDronesList.tsx
-│       │   ├── FlightSessionsList.tsx
-│       │   ├── TaskList.tsx
-│       │   ├── TaskDetailDialog.tsx
-│       │   ├── WeatherControls.tsx
-│       │   ├── DestinationAddressInput.tsx
-│       │   ├── AIFloatingNavigator.tsx
-│       │   └── ui/           # dialog, alert-dialog, button, tooltip, slider, card, scroll-area
-│       ├── contexts/
-│       │   ├── ThemeContext.tsx
-│       │   └── themeStorage.ts
-│       ├── hooks/
-│       │   ├── useDroneMap.ts
-│       │   ├── useDrones.ts
-│       │   ├── useTasks.ts
-│       │   ├── useTelemetry.ts
-│       │   └── useUserLocation.ts
-│       ├── pages/
-│       │   ├── Index.tsx
-│       │   └── NotFound.tsx
-│       └── stores/
-│           ├── telemetryStore.ts
-│           └── uiStore.ts
+│       ├── app/              # application layer: composes everything below
+│       │   ├── index.tsx     # <App />
+│       │   ├── provider.tsx  # Theme, React Query, Tooltip, Toaster
+│       │   ├── router.tsx    # route table
+│       │   └── routes/       # dashboard.tsx, not-found.tsx
+│       ├── config/           # env.ts (all VITE_* settings), paths.ts
+│       ├── api/              # fetch client, request functions, query keys
+│       ├── components/       # app components; ui/ holds shadcn-style primitives
+│       ├── contexts/         # theme context
+│       ├── hooks/            # data hooks (useTasks, useDrones, useFlightSessions) and telemetry connection
+│       ├── i18n/ locales/    # react-i18next setup, en + zh-TW messages
+│       ├── lib/              # react-query config, map style, tokens bridge, formatting
+│       ├── stores/           # Zustand: telemetryStore, uiStore
+│       ├── styles/tokens/    # two-layer design tokens (primitives → semantic)
+│       ├── types/
+│       └── utils/
 └── backend/
     ├── requirements.txt
     ├── requirements-dev.txt
@@ -274,7 +254,7 @@ flowchart LR
 flowchart TB
   subgraph Entry
     main[main.tsx]
-    App[App.tsx]
+    App[app/index.tsx]
   end
   subgraph Providers
     Theme[ThemeContext]
@@ -282,9 +262,9 @@ flowchart TB
     Router[BrowserRouter]
     Tooltip[TooltipProvider]
   end
-  subgraph Pages
-    Index[Index]
-    NotFound[NotFound]
+  subgraph Routes["app/routes"]
+    Index[dashboard]
+    NotFound[not-found]
   end
   subgraph Features
     Map[GoogleMapView]

@@ -1,7 +1,9 @@
 /** Base API client: fetch wrapper with base URL and error handling. */
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
+import { env } from "@/config/env";
 
-if (import.meta.env.PROD && !API_BASE) {
+const API_BASE = env.apiUrl;
+
+if (env.isProd && !API_BASE) {
   console.error(
     "[InsightAero] VITE_API_URL is not set. Set it at build time (e.g. in .env.production) so API requests target the correct backend."
   );

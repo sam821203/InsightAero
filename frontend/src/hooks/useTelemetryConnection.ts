@@ -3,12 +3,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { TelemetryPacket } from "@/types/telemetry";
 import { useTelemetryStore } from "@/stores/telemetryStore";
 import { queryKeys } from "@/api/queryKeys";
+import { env } from "@/config/env";
 
-const WS_URL =
-  import.meta.env.VITE_WS_BASE_URL ??
-  (import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL.replace(/^http/, "ws")}/ws/telemetry`
-    : `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws/telemetry`);
+const WS_URL = env.telemetryWsUrl;
 
 const RECONNECT_BASE_MS = 1000;
 const RECONNECT_MAX_MS = 15000;
