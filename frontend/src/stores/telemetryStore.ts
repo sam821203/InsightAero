@@ -52,6 +52,26 @@ export function liveDroneIdsOf(byDrone: TelemetryByDrone): number[] {
   return real.length > 0 ? real : ids;
 }
 
+function sameIds(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((id, i) => id === b[i]);
+}
+
+/**
+ * Auto-select only when the set of live drones changes (a drone starts or
+ * stops sending) and the current selection isn't among them. Between those
+ * changes, keep whatever the user picked, including a drone that is on the
+ * map but not flying.
+ */
+function nextSelection(
+  selected: number,
+  before: TelemetryByDrone,
+  after: TelemetryByDrone
+): number {
+  const liveAfter = liveDroneIdsOf(after);
+  if (sameIds(liveDroneIdsOf(before), liveAfter)) return selected;
+  return liveAfter.includes(selected) ? selected : liveAfter[0];
+}
+
 export const useTelemetryStore = create<TelemetryState>((set) => ({
   byDrone: {},
   pathByDrone: {},
@@ -73,11 +93,11 @@ export const useTelemetryStore = create<TelemetryState>((set) => ({
         byDrone[key] = packet;
         pathByDrone[key] = path;
       }
-      const liveIds = liveDroneIdsOf(byDrone);
-      const selectedDroneId = liveIds.includes(state.selectedDroneId)
-        ? state.selectedDroneId
-        : liveIds[0];
-      return { byDrone, pathByDrone, selectedDroneId };
+      return {
+        byDrone,
+        pathByDrone,
+        selectedDroneId: nextSelection(state.selectedDroneId, state.byDrone, byDrone),
+      };
     }),
 
   selectDrone: (selectedDroneId) => set({ selectedDroneId }),
