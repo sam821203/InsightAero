@@ -1,35 +1,30 @@
 import { useCallback } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "@/api/client";
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/api/queryKeys";
+import { retryWhileFailing } from "@/lib/query";
 import type { FlightPathPoint } from "@/types/telemetry";
-import type { FlightSessionItem } from "./getFlightSessions";
+import { getFlightSessions, getSessionTelemetry, type FlightSessionItem } from "./flightSessions";
 
-export interface TelemetryRecord {
-  id: number;
-  session_id: number | null;
-  lat: number;
-  lng: number;
-  alt: number;
-  speed: number;
-  heading: number;
-  battery: number;
-  wind_speed: number;
-  wind_deg: number;
-  effective_speed_m_min: number;
-  created_at: string | null;
-}
-
+const SESSIONS_STALE_MS = 30_000;
 const PATH_POINT_LIMIT = 2000;
 
-export async function getSessionTelemetry(
-  sessionId: number,
-  params: { limit?: number; offset?: number } = {}
-): Promise<TelemetryRecord[]> {
-  const data = await apiFetch<TelemetryRecord[]>(`/api/flight-sessions/${sessionId}/telemetry`, {
-    params: { limit: params.limit, offset: params.offset },
+export const flightSessionsQueryOptions = (params: { limit?: number } = {}) =>
+  queryOptions({
+    queryKey: queryKeys.flightSessions.list(params),
+    queryFn: () => getFlightSessions(params),
+    staleTime: SESSIONS_STALE_MS,
+    refetchInterval: retryWhileFailing,
   });
-  return Array.isArray(data) ? data : [];
+
+export function useFlightSessions(params: { limit?: number } = {}) {
+  const { data, isLoading, isFetching, error, refetch } = useQuery(flightSessionsQueryOptions(params));
+  return {
+    sessions: data ?? [],
+    loading: isLoading,
+    refetching: isFetching,
+    loadError: error,
+    refetch,
+  };
 }
 
 /**
