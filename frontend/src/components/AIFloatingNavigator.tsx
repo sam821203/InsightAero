@@ -1,18 +1,10 @@
 import { useState } from "react";
 import { Bot, BrainCircuit, X } from "lucide-react";
-import type { TelemetryPacket } from "@/types/telemetry";
 import AIDiagnosticPanel from "@/components/AIDiagnosticPanel";
 import { PanelTitle } from "@/components/ui/panel";
 import { useTranslation } from "react-i18next";
 
-interface Props {
-  telemetry: TelemetryPacket;
-  isRunning: boolean;
-  /** 是否有選中無人機且具遙測，可取得診斷（未傳時沿用 isRunning） */
-  canGetDiagnostic?: boolean;
-}
-
-export default function AIFloatingNavigator({ telemetry, isRunning, canGetDiagnostic }: Props) {
+export default function AIFloatingNavigator() {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
@@ -41,7 +33,7 @@ export default function AIFloatingNavigator({ telemetry, isRunning, canGetDiagno
             </button>
           </div>
           <div className="min-h-0 flex-1 overflow-hidden">
-            <AIDiagnosticPanel telemetry={telemetry} isRunning={isRunning} canGetDiagnostic={canGetDiagnostic} hideTitle />
+            <AIDiagnosticPanel hideTitle />
           </div>
         </div>
       )}

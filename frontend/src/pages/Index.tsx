@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { useTelemetry } from "@/hooks/useTelemetry";
+import { useShallow } from "zustand/react/shallow";
+import { useTelemetryConnection } from "@/hooks/useTelemetryConnection";
+import { liveDroneIdsOf, useTelemetryStore } from "@/stores/telemetryStore";
 import { useUserLocation, FALLBACK_CENTER } from "@/hooks/useUserLocation";
 import { useTheme } from "@/contexts/useTheme";
 import { useDrones } from "@/hooks/useDrones";
 import { useUIStore } from "@/stores/uiStore";
-import GoogleMapView from "@/components/GoogleMapView";
+import LiveMapView from "@/components/LiveMapView";
 import TelemetryHUD from "@/components/TelemetryHUD";
 import WeatherControls from "@/components/WeatherControls";
 import AIFloatingNavigator from "@/components/AIFloatingNavigator";
@@ -94,18 +96,14 @@ export default function Index() {
     };
   }, [isResizing, resizeSidebar]);
 
-  const {
-    telemetry,
-    flightPath,
-    telemetryByDrone,
-    flightPathByDrone,
-    selectedDroneId,
-    setSelectedDroneId,
-    droneIds,
-    isRunning,
-    setRunState,
-    clearFlightPathAndIdle,
-  } = useTelemetry();
+  useTelemetryConnection();
+  // The page only needs which drones are live and which one is selected, so it
+  // re-renders when those change, not on every packet. useShallow keeps the
+  // array stable while the set of drones stays the same.
+  const droneIds = useTelemetryStore(useShallow((s) => liveDroneIdsOf(s.byDrone)));
+  const selectedDroneId = useTelemetryStore((s) => s.selectedDroneId);
+  const setRunState = useTelemetryStore((s) => s.setRunState);
+  const clearPathsAndIdle = useTelemetryStore((s) => s.clearPathsAndIdle);
   const { location: userLocation, isLoading: locationLoading } = useUserLocation();
   const { theme, toggleTheme } = useTheme();
 
@@ -130,17 +128,17 @@ export default function Index() {
   const handleCancelTask = useCallback(
     async (taskId: number) => {
       const ok = await cancelTask(taskId);
-      if (ok) clearFlightPathAndIdle();
+      if (ok) clearPathsAndIdle();
     },
-    [cancelTask, clearFlightPathAndIdle]
+    [cancelTask, clearPathsAndIdle]
   );
 
   const handleDeleteTask = useCallback(
     async (taskId: number) => {
       const ok = await deleteTask(taskId);
-      if (ok) clearFlightPathAndIdle();
+      if (ok) clearPathsAndIdle();
     },
-    [deleteTask, clearFlightPathAndIdle]
+    [deleteTask, clearPathsAndIdle]
   );
 
   useEffect(() => {
@@ -213,14 +211,14 @@ export default function Index() {
     return out;
   }, [dronesForMap]);
 
-  const mapCenter = useMemo(() => {
-    if (droneIds.length > 0) return { lat: telemetry.lat, lng: telemetry.lng };
+  /** Map center when no drone is live; LiveMapView follows the selected drone otherwise. */
+  const fallbackCenter = useMemo(() => {
     if (droneIdsForMap.length > 0 && lastPositionByDrone[droneIdsForMap[0]]) {
       const pos = lastPositionByDrone[droneIdsForMap[0]];
       return { lat: pos.lat, lng: pos.lng };
     }
     return userLocation ?? FALLBACK_CENTER;
-  }, [droneIds.length, droneIdsForMap, lastPositionByDrone, telemetry.lat, telemetry.lng, userLocation]);
+  }, [droneIdsForMap, lastPositionByDrone, userLocation]);
 
   const taskAssignmentsForMap = useMemo(() => {
     return activeTasks.flatMap((t) =>
@@ -284,22 +282,15 @@ export default function Index() {
           <div className="relative min-h-0 flex-1 p-3 pb-0 flex min-h-[320px]">
             <div className="min-h-0 flex-1 min-w-0">
               {showMap ? (
-                <GoogleMapView
-                  telemetryByDrone={telemetryByDrone}
-                  flightPathByDrone={flightPathByDrone}
-                  selectedDroneId={selectedDroneId}
+                <LiveMapView
+                  fallbackCenter={fallbackCenter}
                   isRunning={hasActiveTasksOrLiveTelemetry}
-                  lat={mapCenter.lat}
-                  lng={mapCenter.lng}
-                  heading={telemetry.heading}
-                  flightPath={flightPath}
                   historyPath={historyPath}
                   origin={undefined}
                   destination={undefined}
                   taskAssignments={taskAssignmentsForMap.length > 0 ? taskAssignmentsForMap : null}
                   droneIds={droneIdsForMap}
                   lastPositionByDrone={lastPositionByDrone}
-                  onDroneClick={(id) => setSelectedDroneId(id)}
                   onAllDroneMarkersMounted={handleAllDroneMarkersMounted}
                 />
               ) : (
@@ -309,22 +300,14 @@ export default function Index() {
               )}
             </div>
             {showMap && (
-              <AIFloatingNavigator telemetry={telemetry} isRunning={isRunning} canGetDiagnostic={droneIds.length > 0} />
+              <AIFloatingNavigator />
             )}
           </div>
 
           <div className="flex flex-wrap items-end gap-3 p-3">
-            <TelemetryHUD
-              telemetry={telemetry}
-              activeDroneLabel={activeDroneDisplayName}
-            />
+            <TelemetryHUD activeDroneLabel={activeDroneDisplayName} />
             <div className="ml-auto">
-              <WeatherControls
-                windSpeed={telemetry.wind_speed}
-                windDeg={telemetry.wind_deg}
-                effectiveSpeedMmin={telemetry.effective_speed_m_min}
-                baseSpeedMmin={500}
-              />
+              <WeatherControls baseSpeedMmin={500} />
             </div>
           </div>
         </div>

@@ -1,24 +1,20 @@
-import type { TelemetryPacket } from "@/types/telemetry";
+import { selectActiveTelemetry, useTelemetryStore } from "@/stores/telemetryStore";
 import { Wind, Navigation } from "lucide-react";
 import { Panel, PanelTitle } from "@/components/ui/panel";
 import { useTranslation } from "react-i18next";
 
 interface Props {
-  /** 顯示即時氣象（來自 OpenWeather / 後端推播） */
-  windSpeed: number;
-  windDeg: number;
-  /** 若有受逆風/順風影響，可顯示提示 */
-  effectiveSpeedMmin?: number;
+  /** 無風時的基準分速，用來判斷逆風／順風 */
   baseSpeedMmin?: number;
 }
 
-export default function WeatherControls({
-  windSpeed,
-  windDeg,
-  effectiveSpeedMmin,
-  baseSpeedMmin,
-}: Props) {
+export default function WeatherControls({ baseSpeedMmin }: Props) {
   const { t } = useTranslation();
+  // Primitive selectors: re-render only when one of these values changes,
+  // not on every packet.
+  const windSpeed = useTelemetryStore((s) => selectActiveTelemetry(s).wind_speed);
+  const windDeg = useTelemetryStore((s) => selectActiveTelemetry(s).wind_deg);
+  const effectiveSpeedMmin = useTelemetryStore((s) => selectActiveTelemetry(s).effective_speed_m_min);
   const isHeadwind = effectiveSpeedMmin != null && baseSpeedMmin != null && effectiveSpeedMmin < baseSpeedMmin * 0.95;
   const isTailwind = effectiveSpeedMmin != null && baseSpeedMmin != null && effectiveSpeedMmin > baseSpeedMmin * 1.05;
 
