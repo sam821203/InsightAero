@@ -11,7 +11,7 @@ export default function AIFloatingNavigator() {
   const toggle = () => setExpanded((prev) => !prev);
 
   return (
-    <div className="absolute left-8 bottom-14 z-10 flex flex-col items-start gap-2">
+    <div className="pointer-events-auto flex flex-col items-start gap-2">
       {expanded && (
         <div
           className="flex w-[340px] max-h-[60vh] flex-col overflow-hidden rounded-xl border border-border bg-popover shadow-overlay"

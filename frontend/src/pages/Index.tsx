@@ -8,7 +8,6 @@ import { useDrones } from "@/hooks/useDrones";
 import { useUIStore } from "@/stores/uiStore";
 import LiveMapView from "@/components/LiveMapView";
 import TelemetryHUD from "@/components/TelemetryHUD";
-import WeatherControls from "@/components/WeatherControls";
 import AIFloatingNavigator from "@/components/AIFloatingNavigator";
 import FlightSessionsList from "@/components/FlightSessionsList";
 import MyDronesList from "@/components/MyDronesList";
@@ -220,6 +219,17 @@ export default function Index() {
     return userLocation ?? FALLBACK_CENTER;
   }, [droneIdsForMap, lastPositionByDrone, userLocation]);
 
+  /** Where the selected drone is heading, for the ETA in the telemetry bar. */
+  const selectedDestination = useMemo(() => {
+    for (const task of activeTasks) {
+      const assignment = (task.assignments ?? []).find(
+        (a) => a.drone_id === selectedDroneId && a.status !== "arrived" && a.status !== "cancelled"
+      );
+      if (assignment) return { lat: assignment.dest_lat, lng: assignment.dest_lng };
+    }
+    return null;
+  }, [activeTasks, selectedDroneId]);
+
   const taskAssignmentsForMap = useMemo(() => {
     return activeTasks.flatMap((t) =>
       (t.assignments ?? []).map((a) => ({
@@ -279,7 +289,7 @@ export default function Index() {
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="relative min-h-0 flex-1 p-3 pb-0 flex min-h-[320px]">
+          <div className="relative min-h-0 flex-1 p-3 flex min-h-[320px]">
             <div className="min-h-0 flex-1 min-w-0">
               {showMap ? (
                 <LiveMapView
@@ -300,15 +310,19 @@ export default function Index() {
               )}
             </div>
             {showMap && (
-              <AIFloatingNavigator />
+              /* Bottom of the map: AI navigator above the telemetry bar. Kept clear of
+                 the map's bottom edge so Google's logo and terms stay visible. */
+              <div className="pointer-events-none absolute inset-x-6 bottom-9 z-10 flex flex-col items-start gap-3">
+                <AIFloatingNavigator />
+                {activeDroneDisplayName && (
+                  <TelemetryHUD
+                    droneLabel={activeDroneDisplayName}
+                    destination={selectedDestination}
+                    className="pointer-events-auto w-full"
+                  />
+                )}
+              </div>
             )}
-          </div>
-
-          <div className="flex flex-wrap items-end gap-3 p-3">
-            <TelemetryHUD activeDroneLabel={activeDroneDisplayName} />
-            <div className="ml-auto">
-              <WeatherControls baseSpeedMmin={500} />
-            </div>
           </div>
         </div>
 
