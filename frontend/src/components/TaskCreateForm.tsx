@@ -8,6 +8,11 @@ import type { TaskCreateBody, TaskCreateAssignmentInput } from "@/types/task";
 import { fetchDrones, type DroneResponse } from "@/api/drones";
 import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 import { Input, NativeSelect } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
+import type { Messages } from "@/locales/types";
+
+/* Store the key, not translated text, so the message follows a language switch. */
+type FormError = { key: keyof Messages["taskForm"]["errors"] } | { message: string };
 
 export interface TaskCreateFormProps {
   /** 建議起點（可選，例如上一任務終點），用於需要填起點時預填或提示 */
@@ -43,6 +48,7 @@ export default function TaskCreateForm({
   refreshTrigger,
   excludeDroneIds,
 }: TaskCreateFormProps) {
+  const { t } = useTranslation();
   const [drones, setDrones] = useState<DroneResponse[]>([]);
   const [name, setName] = useState("");
   const [droneIds, setDroneIds] = useState<number[]>([0]);
@@ -59,7 +65,7 @@ export default function TaskCreateForm({
   const [isLocatingDestination, setIsLocatingDestination] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<FormError | null>(null);
 
   useEffect(() => {
     fetchDrones().then(setDrones).catch(() => setDrones([]));
@@ -127,15 +133,15 @@ export default function TaskCreateForm({
     setError(null);
 
     if (validDroneIds.length === 0) {
-      setError("請至少選擇一台無人機");
+      setError({ key: "noDrone" });
       return;
     }
     if (needStartInput && !confirmedStart) {
-      setError("請輸入並定位起點地址（所選無人機中有未執行過任務的需填寫起點）");
+      setError({ key: "noStart" });
       return;
     }
     if (!confirmedDestination) {
-      setError("請輸入並定位終點地址");
+      setError({ key: "noDestination" });
       return;
     }
 
@@ -147,7 +153,7 @@ export default function TaskCreateForm({
           ? { lat: d.last_lat, lng: d.last_lng }
           : confirmedStart;
       if (!start) {
-        setError("起點尚未設定");
+        setError({ key: "startMissing" });
         return;
       }
       assignments.push(makeAssignment(drone_id, start, confirmedDestination!));
@@ -169,7 +175,7 @@ export default function TaskCreateForm({
         onSuccess?.();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "建立失敗");
+      setError(err instanceof Error ? { message: err.message } : { key: "createFailed" });
     } finally {
       setSubmitting(false);
     }
@@ -178,24 +184,24 @@ export default function TaskCreateForm({
   return (
     <Panel>
       <PanelHeader>
-        <PanelTitle>建立任務</PanelTitle>
+        <PanelTitle>{t("taskForm.title")}</PanelTitle>
       </PanelHeader>
       <form onSubmit={handleSubmit} className="space-y-3 p-2">
         <div>
-          <label className="text-[11px] text-muted-foreground">任務名稱（選填）</label>
+          <label className="text-[11px] text-muted-foreground">{t("taskForm.nameLabel")}</label>
           <Input
             size="sm"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="例如：上午巡邏"
+            placeholder={t("taskForm.namePlaceholder")}
             className="mt-0.5"
           />
         </div>
 
         {/* 指派無人機（先選，再依所選決定是否需填起點） */}
         <div className="space-y-2 max-h-[160px] overflow-y-auto">
-          <label className="text-[11px] text-muted-foreground block">指派無人機</label>
+          <label className="text-[11px] text-muted-foreground block">{t("taskForm.dronesLabel")}</label>
           {droneIds.map((droneId, index) => (
             <div
               key={index}
@@ -207,7 +213,7 @@ export default function TaskCreateForm({
                 size="sm"
                 className="flex-1"
               >
-                <option value="">選擇無人機</option>
+                <option value="">{t("taskForm.selectDrone")}</option>
                 {assignableDrones.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -231,12 +237,12 @@ export default function TaskCreateForm({
 
         {/* 起點：依所選無人機是否有上次終止位置決定是否顯示輸入 */}
         {validDroneIds.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground">請先選擇至少一台無人機</p>
+          <p className="text-[11px] text-muted-foreground">{t("taskForm.selectDroneFirst")}</p>
         ) : needStartInput ? (
           <div className="space-y-1.5">
-            <label className="text-[11px] text-muted-foreground">起點地址（必填）</label>
+            <label className="text-[11px] text-muted-foreground">{t("taskForm.startLabel")}</label>
             <p className="text-[11px] text-muted-foreground">
-              所選無人機中有未執行過任務的，請填寫起點
+              {t("taskForm.startHint")}
             </p>
             <div className="flex gap-2 items-center">
               <DestinationAddressInput
@@ -249,7 +255,7 @@ export default function TaskCreateForm({
                   setStartInput(result.formattedAddress);
                   setConfirmedStart({ lat: result.lat, lng: result.lng });
                 }}
-                placeholder="例如：信義區公所"
+                placeholder={t("taskForm.startPlaceholder")}
               />
               <Button
                 type="button"
@@ -259,25 +265,25 @@ export default function TaskCreateForm({
                 disabled={isLocatingStart || !startInput.trim()}
                 className="shrink-0 text-xs"
               >
-                {isLocatingStart ? "定位中…" : "定位"}
+                {isLocatingStart ? t("common.locating") : t("common.locate")}
               </Button>
             </div>
             {confirmedStart && startInput && (
               <p className="text-[11px] text-muted-foreground truncate" title={startInput}>
-                起點：{startInput}
+                {t("taskForm.startConfirmed", { address: startInput })}
               </p>
             )}
           </div>
         ) : (
           <div className="space-y-0.5">
-            <span className="text-[11px] text-muted-foreground">起點</span>
-            <p className="text-[11px] text-foreground">各無人機之上次終止位置</p>
+            <span className="text-[11px] text-muted-foreground">{t("taskForm.startShort")}</span>
+            <p className="text-[11px] text-foreground">{t("taskForm.startFromLastPosition")}</p>
           </div>
         )}
 
         {/* 終點地址：須先選無人機且起點（若需要）已填寫後才可填 */}
         <div className="space-y-1.5">
-          <label className="text-[11px] text-muted-foreground">終點地址（必填）</label>
+          <label className="text-[11px] text-muted-foreground">{t("taskForm.destinationLabel")}</label>
           {!destinationEnabled ? (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -292,7 +298,7 @@ export default function TaskCreateForm({
                       setDestinationInput(result.formattedAddress);
                       setConfirmedDestination({ lat: result.lat, lng: result.lng });
                     }}
-                    placeholder="例如：台北101、信義路一段 1 號"
+                    placeholder={t("taskForm.destinationPlaceholder")}
                     disabled
                   />
                   <Button
@@ -302,12 +308,12 @@ export default function TaskCreateForm({
                     disabled
                     className="shrink-0 text-xs"
                   >
-                    定位
+                    {t("common.locate")}
                   </Button>
                 </span>
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-[220px]">
-                Please select a drone and start address first
+                {t("taskForm.destinationDisabledHint")}
               </TooltipContent>
             </Tooltip>
           ) : (
@@ -322,7 +328,7 @@ export default function TaskCreateForm({
                   setDestinationInput(result.formattedAddress);
                   setConfirmedDestination({ lat: result.lat, lng: result.lng });
                 }}
-                placeholder="例如：台北101、信義路一段 1 號"
+                placeholder={t("taskForm.destinationPlaceholder")}
               />
               <Button
                 type="button"
@@ -332,18 +338,22 @@ export default function TaskCreateForm({
                 disabled={isLocatingDestination || !destinationInput.trim()}
                 className="shrink-0 text-xs"
               >
-                {isLocatingDestination ? "定位中…" : "定位"}
+                {isLocatingDestination ? t("common.locating") : t("common.locate")}
               </Button>
             </div>
           )}
           {confirmedDestination && destinationInput && (
             <p className="text-[11px] text-muted-foreground truncate" title={destinationInput}>
-              終點：{destinationInput}
+              {t("taskForm.destinationConfirmed", { address: destinationInput })}
             </p>
           )}
         </div>
 
-        {error && <p className="text-[11px] text-destructive-text">{error}</p>}
+        {error && (
+          <p className="text-[11px] text-destructive-text">
+            {"key" in error ? t(`taskForm.errors.${error.key}`) : error.message}
+          </p>
+        )}
         <Button
           type="submit"
           size="sm"
@@ -356,7 +366,7 @@ export default function TaskCreateForm({
             (needStartInput && !confirmedStart)
           }
         >
-          {submitting ? "建立中…" : "建立任務"}
+          {submitting ? t("taskForm.submitting") : t("taskForm.submit")}
         </Button>
       </form>
     </Panel>

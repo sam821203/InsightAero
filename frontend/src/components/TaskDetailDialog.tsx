@@ -8,29 +8,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchTask, fetchTaskReport, type TaskReportResponse } from "@/hooks/useTasks";
-import type { TaskStatus, AssignmentStatus } from "@/types/task";
 import { PanelTitle } from "@/components/ui/panel";
-
-const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
-  pending: "待命中",
-  starting: "啟動中",
-  running: "執行中",
-  paused: "已暫停",
-  completed: "已完成",
-  cancelled: "已終止",
-  failed: "失敗",
-};
-
-const ASSIGNMENT_STATUS_LABEL: Record<AssignmentStatus, string> = {
-  pending: "待命",
-  starting: "啟動中",
-  flying: "飛行中",
-  paused: "已暫停",
-  arrived: "已抵達",
-  cancelled: "已終止",
-};
+import { useTranslation } from "react-i18next";
+import { formatDateTime } from "@/lib/format";
 
 function ReportBlock({ taskId }: { taskId: number }) {
+  const { t, i18n } = useTranslation();
   const {
     data: report,
     isLoading,
@@ -52,7 +35,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
   if (error && (error as Error).message === "No report yet") {
     return (
       <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-        此任務尚無結案報告（可能尚未完成或報告未觸發）。
+        {t("taskDetail.report.none")}
       </div>
     );
   }
@@ -60,7 +43,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
   if (error) {
     return (
       <div className="rounded-lg border border-border border-destructive-border bg-destructive-subtle p-4 text-sm text-destructive-text">
-        無法載入報告：{(error as Error).message}
+        {t("taskDetail.report.loadFailed", { message: (error as Error).message })}
       </div>
     );
   }
@@ -68,7 +51,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
   if (isLoading || !report) {
     return (
       <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-        載入報告中…
+        {t("taskDetail.report.loading")}
       </div>
     );
   }
@@ -76,7 +59,7 @@ function ReportBlock({ taskId }: { taskId: number }) {
   if (report.status === "pending") {
     return (
       <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-        報告生成中…
+        {t("taskDetail.report.generating")}
       </div>
     );
   }
@@ -84,12 +67,12 @@ function ReportBlock({ taskId }: { taskId: number }) {
   if (report.status === "failed") {
     return (
       <div className="rounded-lg border border-border border-destructive-border bg-destructive-subtle p-4 text-sm">
-        <p className="font-medium text-destructive-text">報告產生失敗</p>
+        <p className="font-medium text-destructive-text">{t("taskDetail.report.failed")}</p>
         {report.error_message && (
           <p className="mt-1 text-muted-foreground">{report.error_message}</p>
         )}
         <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
-          重新載入
+          {t("taskDetail.report.reload")}
         </Button>
       </div>
     );
@@ -97,13 +80,13 @@ function ReportBlock({ taskId }: { taskId: number }) {
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <PanelTitle className="mb-2">結案報告</PanelTitle>
+      <PanelTitle className="mb-2">{t("taskDetail.report.title")}</PanelTitle>
       <div className="whitespace-pre-wrap text-sm text-foreground">
         {report.report_text ?? "—"}
       </div>
       {report.updated_at && (
         <p className="mt-2 text-xs text-muted-foreground">
-          更新於 {new Date(report.updated_at).toLocaleString()}
+          {t("taskDetail.report.updatedAt", { date: formatDateTime(report.updated_at, i18n.language) })}
         </p>
       )}
     </div>
@@ -121,6 +104,7 @@ export default function TaskDetailDialog({
   onOpenChange,
   taskId,
 }: TaskDetailDialogProps) {
+  const { t, i18n } = useTranslation();
   const id = taskId ?? 0;
   const enabled = open && id > 0;
 
@@ -135,11 +119,7 @@ export default function TaskDetailDialog({
   });
 
   const title =
-    task != null
-      ? task.name || `任務 #${task.id}`
-      : id > 0
-        ? "任務詳情"
-        : "任務詳情";
+    task != null ? task.name || t("tasks.untitled", { id: task.id }) : t("taskDetail.fallbackTitle");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -150,7 +130,7 @@ export default function TaskDetailDialog({
         <ScrollArea className="flex-1 px-6 py-4">
           <div className="space-y-4 pr-4">
             {!enabled && (
-              <p className="text-sm text-muted-foreground">未選擇任務</p>
+              <p className="text-sm text-muted-foreground">{t("taskDetail.noSelection")}</p>
             )}
             {enabled && error && (
               <p className="text-sm text-destructive-text">
@@ -158,22 +138,22 @@ export default function TaskDetailDialog({
               </p>
             )}
             {enabled && isLoading && (
-              <p className="text-sm text-muted-foreground">載入任務中…</p>
+              <p className="text-sm text-muted-foreground">{t("taskDetail.loading")}</p>
             )}
             {enabled && task != null && (
               <>
                 <div className="rounded-lg border border-border bg-card p-4">
                   <p className="text-sm text-muted-foreground">
-                    狀態：{TASK_STATUS_LABEL[task.status as TaskStatus]}
+                    {t("taskDetail.status", { status: t(`status.task.${task.status}`) })}
                   </p>
                   {task.created_at && (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      建立於 {new Date(task.created_at).toLocaleString()}
+                      {t("taskDetail.createdAt", { date: formatDateTime(task.created_at, i18n.language) })}
                     </p>
                   )}
                 </div>
                 <div className="rounded-lg border border-border bg-card p-4">
-                  <PanelTitle as="h2">指派</PanelTitle>
+                  <PanelTitle as="h2">{t("taskDetail.assignments")}</PanelTitle>
                   <ul className="mt-2 space-y-2">
                     {task.assignments.map((a) => (
                       <li
@@ -181,10 +161,10 @@ export default function TaskDetailDialog({
                         className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"
                       >
                         <span className="font-medium">
-                          {a.drone_name ?? `無人機 ${a.drone_id}`}
+                          {a.drone_name ?? t("common.droneFallback", { id: a.drone_id })}
                         </span>
                         <span className="text-muted-foreground">
-                          {ASSIGNMENT_STATUS_LABEL[a.status as AssignmentStatus]}
+                          {t(`status.assignment.${a.status}`)}
                         </span>
                         <span className="text-muted-foreground">
                           ({a.start_lat.toFixed(4)}, {a.start_lng.toFixed(4)}) → (

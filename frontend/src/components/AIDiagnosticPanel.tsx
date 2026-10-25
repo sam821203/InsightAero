@@ -6,12 +6,21 @@ import { Button } from "@/components/ui/button";
 import { PanelTitle } from "@/components/ui/panel";
 import { diagnoseSession, diagnoseTelemetry } from "@/api/diagnose";
 import type { ApiError } from "@/api/client";
+import { useTranslation } from "react-i18next";
+import { formatClockTime } from "@/lib/format";
+import type { Messages } from "@/locales/types";
+
+type AiLogKey = keyof Messages["ai"]["log"];
+
+type LogContent =
+  | { key: AiLogKey; params?: Record<string, string | number> }
+  | { raw: string };
 
 interface LogEntry {
   id: number;
-  text: string;
+  timestamp: number;
   type: "info" | "warning" | "status" | "diagnosis";
-  time: string;
+  content: LogContent;
 }
 
 function toSnapshot(t: TelemetryPacket): Record<string, number> {
@@ -28,54 +37,52 @@ function toSnapshot(t: TelemetryPacket): Record<string, number> {
   };
 }
 
-function generateInsight(t: TelemetryPacket, prev: TelemetryPacket | null): LogEntry | null {
-  const now = new Date().toLocaleTimeString("zh-TW", { hour12: false });
-  const id = Date.now() + Math.random();
+const STATUS_MESSAGES = [
+  "statusStable",
+  "statusTelemetry",
+  "statusWind",
+  "statusNavigation",
+] as const satisfies readonly AiLogKey[];
 
+function generateInsight(t: TelemetryPacket, prev: TelemetryPacket | null): Omit<LogEntry, "id" | "timestamp"> {
   if (t.battery < 15) {
     return {
-      id,
-      time: now,
       type: "warning",
-      text: `⚠ 電池嚴重不足 ${t.battery.toFixed(1)}%，建議立即返航。`,
+      content: { key: "batteryCritical", params: { battery: t.battery.toFixed(1) } },
     };
   }
   if (t.battery < 30 && (!prev || prev.battery >= 30)) {
     return {
-      id,
-      time: now,
       type: "warning",
-      text: `⚠ 電池低於 30%。風載係數: ${t.wind_speed > 20 ? "高" : "正常"}`,
+      content: { key: t.wind_speed > 20 ? "batteryLowHighWind" : "batteryLow" },
     };
   }
   if (t.effective_speed_m_min < 300) {
     return {
-      id,
-      time: now,
       type: "warning",
-      text: `分析：地速降至 ${t.effective_speed_m_min} m/min（逆風）。電池效率受影響。`,
+      content: { key: "headwindSlowdown", params: { speed: t.effective_speed_m_min } },
     };
   }
   if (t.wind_speed > 35) {
     return {
-      id,
-      time: now,
       type: "warning",
-      text: `⚠ 風速超過安全閾值 ${t.wind_speed} m/s，穩定性可能受影響。`,
+      content: { key: "windExceeded", params: { wind: t.wind_speed } },
     };
   }
 
-  const messages = [
-    `狀態：飛行穩定。座標 ${t.lat.toFixed(4)}, ${t.lng.toFixed(4)} 已同步。`,
-    `遙測正常。高度 ${t.alt}m，航向 ${t.heading.toFixed(1)}°。`,
-    `風力補償中。有效分速 ${t.effective_speed_m_min} m/min。飛行包線：穩定。`,
-    `導航確認：航向 ${t.heading.toFixed(0)}°。航跡已確認。`,
-  ];
+  const key = STATUS_MESSAGES[Math.floor(Math.random() * STATUS_MESSAGES.length)];
   return {
-    id,
-    time: now,
     type: "status",
-    text: messages[Math.floor(Math.random() * messages.length)],
+    content: {
+      key,
+      params: {
+        lat: t.lat.toFixed(4),
+        lng: t.lng.toFixed(4),
+        alt: t.alt,
+        heading: t.heading.toFixed(1),
+        speed: t.effective_speed_m_min,
+      },
+    },
   };
 }
 
@@ -89,17 +96,17 @@ interface Props {
 }
 
 export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnostic, hideTitle }: Props) {
+  const { t, i18n } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isDiagnosing, setIsDiagnosing] = useState(false);
   const prevRef = useRef<TelemetryPacket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const tickRef = useRef(0);
 
-  const appendLog = useCallback((entry: Omit<LogEntry, "id" | "time">) => {
-    const now = new Date().toLocaleTimeString("zh-TW", { hour12: false });
+  const appendLog = useCallback((entry: Omit<LogEntry, "id" | "timestamp">) => {
     setLogs((prev) => [
       ...prev.slice(-50),
-      { ...entry, id: Date.now() + Math.random(), time: now },
+      { ...entry, id: Date.now() + Math.random(), timestamp: Date.now() },
     ]);
   }, []);
 
@@ -112,11 +119,11 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
         telemetry.session_id != null
           ? await diagnoseSession(telemetry.session_id)
           : await diagnoseTelemetry([toSnapshot(telemetry)]);
-      appendLog({ type: "diagnosis", text: data.diagnosis ?? "" });
+      appendLog({ type: "diagnosis", content: { raw: data.diagnosis ?? "" } });
     } catch (err) {
       const message =
         (err as ApiError).detail ?? (err instanceof Error ? err.message : String(err));
-      appendLog({ type: "warning", text: `環境診斷請求失敗：${message}` });
+      appendLog({ type: "warning", content: { key: "diagnoseFailed", params: { message } } });
     } finally {
       setIsDiagnosing(false);
     }
@@ -131,13 +138,18 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
     setLogs([
       {
         id: Date.now(),
-        time: new Date().toLocaleTimeString("zh-TW", { hour12: false }),
+        timestamp: Date.now(),
         type: "info",
-        text: "AI 導航員上線。正在初始化飛行遙測分析…",
+        content: { key: "online" },
       },
     ]);
     tickRef.current = 0;
   }, [isRunning]);
+
+  const renderContent = (content: LogContent) => {
+    if ("raw" in content) return content.raw;
+    return t(`ai.log.${content.key}`, content.params);
+  };
 
   const colorMap: Record<LogEntry["type"], string> = {
     info: "text-foreground",
@@ -151,7 +163,7 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
       {!hideTitle && (
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">
           <BrainCircuit className="h-4 w-4 text-subtle-foreground" />
-          <PanelTitle as="h2">AI 導航員</PanelTitle>
+          <PanelTitle as="h2">{t("ai.title")}</PanelTitle>
         </div>
       )}
 
@@ -159,11 +171,13 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
         <div className="space-y-1.5 text-xs leading-relaxed">
           {logs.map((log) => (
             <div key={log.id} className="flex gap-2">
-              <span className="shrink-0 font-mono text-subtle-foreground">{log.time}</span>
+              <span className="shrink-0 font-mono text-subtle-foreground">
+                {formatClockTime(log.timestamp, i18n.language)}
+              </span>
               <span
                 className={`${colorMap[log.type]} ${log.type === "diagnosis" ? "whitespace-pre-wrap" : ""}`}
               >
-                {log.text}
+                {renderContent(log.content)}
               </span>
             </div>
           ))}
@@ -174,7 +188,7 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
       <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-4 py-2">
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 shrink-0 rounded-full ${isRunning ? "bg-success" : "bg-border-strong"}`} />
-          <span className="text-xs text-muted-foreground">HEARTBEAT</span>
+          <span className="text-xs text-muted-foreground">{isRunning ? t("ai.missionActive") : t("ai.idle")}</span>
         </div>
         <Button
           type="button"
@@ -184,7 +198,7 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
           disabled={!canDiagnose || isDiagnosing}
           onClick={handleDiagnose}
         >
-          {isDiagnosing ? "診斷中…" : "取得環境診斷"}
+          {isDiagnosing ? t("ai.diagnosing") : t("ai.diagnose")}
         </Button>
       </div>
     </div>

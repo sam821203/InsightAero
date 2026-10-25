@@ -2,27 +2,9 @@ import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Rocket, Square, Pause, Play, Trash2 } from "lucide-react";
-import type { TaskItem, TaskStatus, AssignmentStatus } from "@/types/task";
+import type { TaskItem } from "@/types/task";
 import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
-
-const TASK_STATUS_LABEL: Record<TaskStatus, string> = {
-  pending: "待命中",
-  starting: "啟動中",
-  running: "執行中",
-  paused: "已暫停",
-  completed: "已完成",
-  cancelled: "已終止",
-  failed: "失敗",
-};
-
-const ASSIGNMENT_STATUS_LABEL: Record<AssignmentStatus, string> = {
-  pending: "待命",
-  starting: "啟動中",
-  flying: "飛行中",
-  paused: "已暫停",
-  arrived: "已抵達",
-  cancelled: "已終止",
-};
+import { useTranslation } from "react-i18next";
 
 interface TaskListProps {
   tasks: TaskItem[];
@@ -43,6 +25,7 @@ export default function TaskList({
   onDelete,
   onTaskClick,
 }: TaskListProps) {
+  const { t } = useTranslation();
   const [actingId, setActingId] = useState<number | null>(null);
 
   const handleStart = async (taskId: number) => {
@@ -89,11 +72,11 @@ export default function TaskList({
   return (
     <Panel>
       <PanelHeader>
-        <PanelTitle>任務列表</PanelTitle>
+        <PanelTitle>{t("tasks.title")}</PanelTitle>
       </PanelHeader>
       <ScrollArea className="h-[240px]">
         {tasks.length === 0 ? (
-          <div className="p-3 text-xs text-muted-foreground">尚無任務</div>
+          <div className="p-3 text-xs text-muted-foreground">{t("tasks.empty")}</div>
         ) : (
           <ul className="space-y-2 p-2">
             {tasks.map((task) => {
@@ -123,23 +106,23 @@ export default function TaskList({
                         onClick={() => onTaskClick(task.id)}
                         className="font-medium text-foreground underline-offset-2 hover:underline text-left"
                       >
-                        {task.name || `任務 #${task.id}`}
+                        {task.name || t("tasks.untitled", { id: task.id })}
                       </button>
                     ) : (
                       <span className="font-medium text-foreground">
-                        {task.name || `任務 #${task.id}`}
+                        {task.name || t("tasks.untitled", { id: task.id })}
                       </span>
                     )}
                     <span className="text-muted-foreground">
-                      {TASK_STATUS_LABEL[task.status]}
+                      {t(`status.task.${task.status}`)}
                     </span>
                   </div>
                   <ul className="mt-1.5 space-y-0.5 pl-1 text-muted-foreground">
                     {task.assignments.map((a) => (
                       <li key={a.id} className="flex items-center gap-2">
-                        <span>{a.drone_name ?? `無人機 ${a.drone_id}`}</span>
+                        <span>{a.drone_name ?? t("common.droneFallback", { id: a.drone_id })}</span>
                         <span>
-                          {ASSIGNMENT_STATUS_LABEL[a.status]}
+                          {t(`status.assignment.${a.status}`)}
                         </span>
                       </li>
                     ))}
@@ -153,7 +136,7 @@ export default function TaskList({
                         disabled={busy}
                       >
                         <Rocket className="h-2.5 w-2.5" />
-                        開始
+                        {t("tasks.start")}
                       </Button>
                     )}
                     {canPause && (
@@ -165,7 +148,7 @@ export default function TaskList({
                         disabled={busy}
                       >
                         <Pause className="h-2.5 w-2.5" />
-                        暫停
+                        {t("tasks.pause")}
                       </Button>
                     )}
                     {canResume && (
@@ -177,7 +160,7 @@ export default function TaskList({
                         disabled={busy}
                       >
                         <Play className="h-2.5 w-2.5" />
-                        繼續
+                        {t("tasks.resume")}
                       </Button>
                     )}
                     {canCancel && (
@@ -189,12 +172,12 @@ export default function TaskList({
                         disabled={busy || !canCancelClick}
                         title={
                           !canCancelClick
-                            ? "任務尚未開始，無法終止"
-                            : "終止任務"
+                            ? t("tasks.cancelDisabled")
+                            : t("tasks.cancelTitle")
                         }
                       >
                         <Square className="h-2.5 w-2.5" />
-                        終止
+                        {t("tasks.cancel")}
                       </Button>
                     )}
                     <Button
@@ -203,10 +186,10 @@ export default function TaskList({
                       className="h-6 gap-1 px-2 text-[11px] text-muted-foreground hover:bg-destructive-subtle hover:text-destructive-text"
                       onClick={() => handleDelete(task.id)}
                       disabled={busy}
-                      title="刪除任務"
+                      title={t("tasks.deleteTitle")}
                     >
                       <Trash2 className="h-2.5 w-2.5" />
-                      刪除
+                      {t("common.delete")}
                     </Button>
                   </div>
                 </li>
