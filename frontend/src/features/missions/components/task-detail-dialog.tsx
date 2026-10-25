@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { fetchTask, fetchTaskReport, type TaskReportResponse } from "@/hooks/use-tasks";
+import { isNoReportYet, useTask, useTaskReport } from "@/features/missions/api/missions.queries";
 import { PanelTitle } from "@/components/ui/panel";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/lib/format";
@@ -16,25 +15,9 @@ import { AssignmentStatusBadge, TaskStatusBadge } from "@/components/status-badg
 
 function ReportBlock({ taskId }: { taskId: number }) {
   const { t, i18n } = useTranslation();
-  const {
-    data: report,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["taskReport", taskId],
-    queryFn: () => fetchTaskReport(taskId),
-    refetchInterval: (query) => {
-      const status = (query.state.data as TaskReportResponse | undefined)?.status;
-      return status === "pending" ? 3000 : false;
-    },
-    retry: (failureCount, err) => {
-      if (err instanceof Error && err.message === "No report yet") return false;
-      return failureCount < 2;
-    },
-  });
+  const { data: report, isLoading, error, refetch } = useTaskReport(taskId);
 
-  if (error && (error as Error).message === "No report yet") {
+  if (isNoReportYet(error)) {
     return (
       <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
         {t("taskDetail.report.none")}
@@ -110,15 +93,7 @@ export default function TaskDetailDialog({
   const id = taskId ?? 0;
   const enabled = open && id > 0;
 
-  const {
-    data: task,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["task", id],
-    queryFn: () => fetchTask(id),
-    enabled,
-  });
+  const { data: task, isLoading, error } = useTask(id, { enabled });
 
   const title =
     task != null ? task.name || t("tasks.untitled", { id: task.id }) : t("taskDetail.fallbackTitle");

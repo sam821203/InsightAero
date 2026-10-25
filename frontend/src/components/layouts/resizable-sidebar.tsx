@@ -1,18 +1,22 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
+
+const MIN_WIDTH = 260;
+const MAX_WIDTH = 560;
+const DEFAULT_WIDTH = 400;
+
+const clampWidth = (width: number) => Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, width));
 
 interface ResizableSidebarProps {
   label: string;
   children: ReactNode;
 }
 
-/** Right-hand sidebar with a drag handle on its left edge. Width lives in uiStore. */
+/** Right-hand sidebar with a drag handle on its left edge. Only this component uses the width, so it is local state. */
 export default function ResizableSidebar({ label, children }: ResizableSidebarProps) {
   const { t } = useTranslation();
-  const sidebarWidth = useUIStore((s) => s.sidebarWidth);
-  const resizeSidebar = useUIStore((s) => s.resizeSidebar);
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
 
   const startResize = useCallback((e: React.MouseEvent) => {
@@ -24,7 +28,8 @@ export default function ResizableSidebar({ label, children }: ResizableSidebarPr
     if (!isResizing) return;
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
-    const onMove = (e: MouseEvent) => resizeSidebar(e.clientX);
+    // The sidebar is on the right edge, so its width is the distance from the cursor to the window edge.
+    const onMove = (e: MouseEvent) => setWidth(clampWidth(window.innerWidth - e.clientX));
     const onUp = () => setIsResizing(false);
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
@@ -34,13 +39,13 @@ export default function ResizableSidebar({ label, children }: ResizableSidebarPr
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
     };
-  }, [isResizing, resizeSidebar]);
+  }, [isResizing]);
 
   return (
     <aside
       aria-label={label}
       className="relative flex shrink-0 flex-col border-l border-border p-3"
-      style={{ width: sidebarWidth }}
+      style={{ width }}
     >
       <button
         type="button"

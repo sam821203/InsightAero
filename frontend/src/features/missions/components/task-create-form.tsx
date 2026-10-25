@@ -14,8 +14,6 @@ import type { Messages } from "@/locales/types";
 type FormError = { key: keyof Messages["taskForm"]["errors"] } | { message: string };
 
 export interface TaskCreateFormProps {
-  /** 建議起點（可選，例如上一任務終點），用於需要填起點時預填或提示 */
-  effectiveStart: { lat: number; lng: number } | null;
   onCreate: (body: TaskCreateBody) => Promise<unknown>;
   onSuccess?: () => void;
   onAddressError?: () => void;
@@ -38,7 +36,6 @@ function makeAssignment(
 }
 
 export default function TaskCreateForm({
-  effectiveStart,
   onCreate,
   onSuccess,
   onAddressError,

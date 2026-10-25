@@ -5,8 +5,6 @@ import type {
   TelemetryPacket,
 } from "@/types/telemetry";
 
-export type RunState = "idle" | "running" | "paused";
-
 /** Packets without drone_id come from the legacy single-drone simulator. */
 export const LEGACY_DRONE_KEY = 0;
 
@@ -35,17 +33,15 @@ interface TelemetryState {
   byDrone: TelemetryByDrone;
   pathByDrone: FlightPathByDrone;
   selectedDroneId: number;
-  runState: RunState;
   /** Telemetry WebSocket state. "reconnecting" means it dropped and is retrying. */
   connection: ConnectionState;
 
   /** Apply a batch of packets in one update (one re-render for subscribers). */
   ingest: (packets: TelemetryPacket[]) => void;
   selectDrone: (droneId: number) => void;
-  setRunState: (runState: RunState) => void;
   setConnection: (connection: ConnectionState) => void;
-  /** Drop trails and go idle, keeping the last packets so markers don't jump. */
-  clearPathsAndIdle: () => void;
+  /** Drop trails, keeping the last packets so markers don't jump. */
+  clearPaths: () => void;
 }
 
 /** Drone IDs with live telemetry. The legacy key only counts when it's alone. */
@@ -79,7 +75,6 @@ export const useTelemetryStore = create<TelemetryState>((set) => ({
   byDrone: {},
   pathByDrone: {},
   selectedDroneId: LEGACY_DRONE_KEY,
-  runState: "idle",
   connection: "connecting",
 
   ingest: (packets) =>
@@ -104,9 +99,8 @@ export const useTelemetryStore = create<TelemetryState>((set) => ({
     }),
 
   selectDrone: (selectedDroneId) => set({ selectedDroneId }),
-  setRunState: (runState) => set({ runState }),
   setConnection: (connection) => set({ connection }),
-  clearPathsAndIdle: () => set({ pathByDrone: {}, runState: "idle" }),
+  clearPaths: () => set({ pathByDrone: {} }),
 }));
 
 /* Selectors. Keep them outside components so they're stable references. */
@@ -115,8 +109,6 @@ export const selectActiveTelemetry = (s: TelemetryState): TelemetryPacket =>
   s.byDrone[s.selectedDroneId] ?? DEFAULT_TELEMETRY;
 
 export const selectActivePath = (s: TelemetryState) => s.pathByDrone[s.selectedDroneId];
-
-export const selectIsRunning = (s: TelemetryState) => s.runState !== "idle";
 
 export const selectHasLiveTelemetry = (s: TelemetryState) =>
   Object.keys(s.byDrone).length > 0;
