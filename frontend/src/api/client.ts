@@ -14,6 +14,18 @@ export function getApiBase(): string {
 export interface ApiError extends Error {
   status?: number;
   detail?: string;
+  /**
+   * True when the backend couldn't be reached: no response at all (server down,
+   * offline, CORS) or a gateway error (the Vite dev proxy answers 502 when the
+   * backend isn't running).
+   */
+  unreachable?: boolean;
+}
+
+const GATEWAY_STATUSES = new Set([502, 503, 504]);
+
+export function isBackendUnreachable(error: unknown): boolean {
+  return (error as ApiError | null)?.unreachable === true;
 }
 
 export async function apiFetch<T>(
@@ -31,13 +43,21 @@ export async function apiFetch<T>(
     if (qs) url += (url.includes("?") ? "&" : "?") + qs;
   }
   const hasBody = init.body != null;
-  const res = await fetch(url, {
-    ...init,
-    headers: {
-      ...(hasBody ? { "Content-Type": "application/json" } : {}),
-      ...init.headers,
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...init,
+      headers: {
+        ...(hasBody ? { "Content-Type": "application/json" } : {}),
+        ...init.headers,
+      },
+    });
+  } catch (cause) {
+    if (cause instanceof DOMException && cause.name === "AbortError") throw cause;
+    const err: ApiError = new Error("Network error") as ApiError;
+    err.unreachable = true;
+    throw err;
+  }
   if (!res.ok) {
     let detail: string | undefined;
     try {
@@ -49,6 +69,7 @@ export async function apiFetch<T>(
     const err: ApiError = new Error(detail ?? `HTTP ${res.status}`) as ApiError;
     err.status = res.status;
     err.detail = detail;
+    err.unreachable = GATEWAY_STATUSES.has(res.status);
     throw err;
   }
   if (res.status === 204) return undefined as T;

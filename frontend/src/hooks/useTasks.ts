@@ -1,4 +1,7 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { errorMessage } from "@/lib/errorMessage";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TaskItem, TaskCreateBody } from "@/types/task";
 import {
@@ -17,6 +20,9 @@ import {
 export type { TaskReportResponse } from "@/api/tasks";
 
 const TASKS_QUERY_KEY = ["tasks"] as const;
+const RETRY_WHILE_FAILING_MS = 10_000;
+
+type ActionKey = "create" | "start" | "pause" | "resume" | "cancel" | "delete";
 
 export async function fetchTask(taskId: number): Promise<TaskItem> {
   return apiFetchTask(taskId);
@@ -34,7 +40,7 @@ export function useTasks(params?: {
   offset?: number;
 }) {
   const queryClient = useQueryClient();
-  const [mutationError, setMutationError] = useState<Error | null>(null);
+  const { t } = useTranslation();
 
   const queryKey = useMemo(
     () =>
@@ -52,12 +58,15 @@ export function useTasks(params?: {
   const {
     data,
     isLoading,
-    error: queryError,
+    isFetching,
+    error: loadError,
     refetch,
   } = useQuery({
     queryKey,
     queryFn: () => apiFetchTasks(params),
     refetchInterval: (query) => {
+      // Keep trying while the list can't load, so it recovers on its own when the backend is back.
+      if (query.state.status === "error") return RETRY_WHILE_FAILING_MS;
       const tasks = (query.state.data ?? []) as TaskItem[];
       const hasRunningOrStarting = tasks.some(
         (t) => t.status === "running" || t.status === "starting"
@@ -66,51 +75,47 @@ export function useTasks(params?: {
     },
   });
 
-  const invalidateTasks = () => {
-    setMutationError(null);
-    return queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
+  const invalidateTasks = () => queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY });
+
+  /* Every action failure gets a toast; before this they failed silently. */
+  const notifyFailure = (action: ActionKey) => (error: unknown) => {
+    toast.error(t(`errors.task.${action}`), { description: errorMessage(error, t) });
   };
 
   const createMutation = useMutation({
     mutationFn: apiCreateTask,
     onSuccess: invalidateTasks,
-    onError: (e) =>
-      setMutationError(e instanceof Error ? e : new Error(String(e))),
+    onError: notifyFailure("create"),
   });
 
   const startMutation = useMutation({
     mutationFn: apiStartTask,
     onSuccess: invalidateTasks,
-    onError: (e) =>
-      setMutationError(e instanceof Error ? e : new Error(String(e))),
+    onError: notifyFailure("start"),
   });
 
   const pauseMutation = useMutation({
     mutationFn: apiPauseTask,
     onSuccess: invalidateTasks,
-    onError: (e) =>
-      setMutationError(e instanceof Error ? e : new Error(String(e))),
+    onError: notifyFailure("pause"),
   });
 
   const resumeMutation = useMutation({
     mutationFn: apiResumeTask,
     onSuccess: invalidateTasks,
-    onError: (e) =>
-      setMutationError(e instanceof Error ? e : new Error(String(e))),
+    onError: notifyFailure("resume"),
   });
 
   const cancelMutation = useMutation({
     mutationFn: apiCancelTask,
     onSuccess: invalidateTasks,
-    onError: (e) =>
-      setMutationError(e instanceof Error ? e : new Error(String(e))),
+    onError: notifyFailure("cancel"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: apiDeleteTask,
     onSuccess: invalidateTasks,
-    onError: (e) =>
-      setMutationError(e instanceof Error ? e : new Error(String(e))),
+    onError: notifyFailure("delete"),
   });
 
   const createTask = async (body: TaskCreateBody): Promise<TaskItem | null> => {
@@ -166,20 +171,14 @@ export function useTasks(params?: {
     }
   };
 
-  const error =
-    mutationError ??
-    (queryError instanceof Error
-      ? queryError
-      : queryError
-        ? new Error(String(queryError))
-        : null);
-
   return {
     fetchTask,
     fetchTaskReport,
     tasks: data ?? [],
     loading: isLoading,
-    error,
+    /** Set when the list itself failed to load (action failures are shown as toasts). */
+    loadError,
+    refetching: isFetching,
     fetchTasks: refetch,
     createTask,
     startTask,

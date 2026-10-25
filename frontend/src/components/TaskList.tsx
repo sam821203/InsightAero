@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Rocket, Square, Pause, Play, Trash2 } from "lucide-react";
+import { Rocket, Square, Pause, Play, Trash2, ClipboardList, Plus } from "lucide-react";
 import type { TaskItem } from "@/types/task";
 import { cn } from "@/lib/utils";
+import { AssignmentStatusBadge, TaskStatusBadge } from "@/components/StatusBadge";
+import { ListEmpty, ListError, ListLoading } from "@/components/ListState";
 import { useTranslation } from "react-i18next";
 
 interface TaskListProps {
@@ -14,6 +16,14 @@ interface TaskListProps {
   onCancel: (taskId: number) => void;
   onDelete: (taskId: number) => void;
   onTaskClick?: (taskId: number) => void;
+  /** First load in progress (no data yet). */
+  loading?: boolean;
+  /** The list failed to load. */
+  loadError?: unknown;
+  onRetry?: () => void;
+  retrying?: boolean;
+  /** Shown as the empty state's action. */
+  onCreate?: () => void;
   className?: string;
 }
 
@@ -25,6 +35,11 @@ export default function TaskList({
   onCancel,
   onDelete,
   onTaskClick,
+  loading,
+  loadError,
+  onRetry,
+  retrying,
+  onCreate,
   className,
 }: TaskListProps) {
   const { t } = useTranslation();
@@ -73,8 +88,24 @@ export default function TaskList({
 
   return (
     <ScrollArea className={cn("min-h-0", className)}>
-        {tasks.length === 0 ? (
-          <div className="p-3 text-xs text-muted-foreground">{t("tasks.empty")}</div>
+        {tasks.length === 0 && loading ? (
+          <ListLoading />
+        ) : tasks.length === 0 && loadError ? (
+          <ListError title={t("tasks.loadFailed")} error={loadError} onRetry={onRetry} retrying={retrying} />
+        ) : tasks.length === 0 ? (
+          <ListEmpty
+            icon={<ClipboardList aria-hidden />}
+            title={t("tasks.empty")}
+            description={t("tasks.emptyHint")}
+            action={
+              onCreate && (
+                <Button size="sm" className="h-7 gap-1 px-2.5 text-xs" onClick={onCreate}>
+                  <Plus className="h-3.5 w-3.5" aria-hidden />
+                  {t("taskForm.title")}
+                </Button>
+              )
+            }
+          />
         ) : (
           <ul className="space-y-2 p-2">
             {tasks.map((task) => {
@@ -111,17 +142,13 @@ export default function TaskList({
                         {task.name || t("tasks.untitled", { id: task.id })}
                       </span>
                     )}
-                    <span className="text-muted-foreground">
-                      {t(`status.task.${task.status}`)}
-                    </span>
+                    <TaskStatusBadge status={task.status} />
                   </div>
                   <ul className="mt-1.5 space-y-0.5 pl-1 text-muted-foreground">
                     {task.assignments.map((a) => (
-                      <li key={a.id} className="flex items-center gap-2">
-                        <span>{a.drone_name ?? t("common.droneFallback", { id: a.drone_id })}</span>
-                        <span>
-                          {t(`status.assignment.${a.status}`)}
-                        </span>
+                      <li key={a.id} className="flex items-center justify-between gap-2">
+                        <span className="truncate">{a.drone_name ?? t("common.droneFallback", { id: a.drone_id })}</span>
+                        <AssignmentStatusBadge status={a.status} className="border-transparent bg-transparent px-0" />
                       </li>
                     ))}
                   </ul>

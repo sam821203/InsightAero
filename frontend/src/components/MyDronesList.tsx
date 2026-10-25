@@ -11,7 +11,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Plane } from "lucide-react";
+import { toast } from "sonner";
 import {
   fetchDrones,
   createDrone,
@@ -24,6 +25,9 @@ import { PanelHeader } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
+import { DroneStatusBadge } from "@/components/StatusBadge";
+import { ListEmpty, ListError, ListLoading } from "@/components/ListState";
+import { errorMessage } from "@/lib/errorMessage";
 
 /* Store the key, not translated text, so the message follows a language switch. */
 type DeleteError = { key: "deleteBlocked" | "deleteFailed" } | { message: string };
@@ -38,6 +42,7 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
   const { t } = useTranslation();
   const [drones, setDrones] = useState<DroneResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<unknown>(null);
   const [adding, setAdding] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState("");
@@ -52,10 +57,18 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
   const [deleting, setDeleting] = useState(false);
 
   const loadDrones = () => {
+    setLoading(true);
     fetchDrones()
-      .then(setDrones)
-      .catch(() => {})
+      .then((data) => {
+        setDrones(data);
+        setLoadError(null);
+      })
+      .catch(setLoadError)
       .finally(() => setLoading(false));
+  };
+
+  const notifyFailure = (titleKey: "addFailed" | "saveFailed") => (error: unknown) => {
+    toast.error(t(`drones.${titleKey}`), { description: errorMessage(error, t) });
   };
 
   useEffect(() => {
@@ -90,7 +103,7 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
         cancelEdit();
         loadDrones();
       })
-      .catch(() => {})
+      .catch(notifyFailure("saveFailed"))
       .finally(() => setSavingEdit(false));
   };
 
@@ -134,7 +147,7 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
         setShowAddForm(false);
         loadDrones();
       })
-      .catch(() => {})
+      .catch(notifyFailure("addFailed"))
       .finally(() => setAdding(false));
   };
 
@@ -142,7 +155,7 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
     <div className={cn("flex min-h-0 flex-col", className)}>
       <PanelHeader>
         <span className="text-xs text-muted-foreground">
-          {loading ? t("common.loading") : t("drones.count", { count: drones.length })}
+          {drones.length > 0 || (!loading && loadError == null) ? t("drones.count", { count: drones.length }) : null}
         </span>
         <Button
           type="button"
@@ -190,12 +203,24 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
         </div>
       )}
       <ScrollArea className="min-h-0 flex-1">
-        {loading ? (
-          <div className="p-3 text-xs text-muted-foreground">{t("common.loading")}</div>
+        {drones.length === 0 && loading ? (
+          <ListLoading />
+        ) : drones.length === 0 && loadError != null ? (
+          <ListError title={t("drones.loadFailed")} error={loadError} onRetry={loadDrones} retrying={loading} />
         ) : drones.length === 0 ? (
-          <div className="p-3 text-xs text-muted-foreground">
-            {t("drones.empty")}
-          </div>
+          <ListEmpty
+            icon={<Plane aria-hidden />}
+            title={t("drones.empty")}
+            description={t("drones.emptyHint")}
+            action={
+              !showAddForm && (
+                <Button size="sm" className="h-7 gap-1 px-2.5 text-xs" onClick={() => setShowAddForm(true)}>
+                  <Plus className="h-3.5 w-3.5" aria-hidden />
+                  {t("drones.addDrone")}
+                </Button>
+              )
+            }
+          />
         ) : (
           <ul className="space-y-0.5 p-2">
             {drones.map((d) => (
@@ -246,16 +271,8 @@ export default function MyDronesList({ refreshTrigger, className }: MyDronesList
                   </>
                 ) : (
                   <>
-                    <span
-                      className={
-                        d.status === "flying" ? "text-success-text flex-1 min-w-0 truncate" : "flex-1 min-w-0 truncate"
-                      }
-                    >
-                      {d.name}
-                    </span>
-                    <span className="shrink-0 text-muted-foreground">
-                      {d.status === "flying" ? t("status.drone.flying") : t("status.drone.idle")}
-                    </span>
+                    <span className="min-w-0 flex-1 truncate text-foreground">{d.name}</span>
+                    <DroneStatusBadge status={d.status} />
                     <Button
                       type="button"
                       variant="ghost"
