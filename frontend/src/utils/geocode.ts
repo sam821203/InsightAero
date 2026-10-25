@@ -1,5 +1,6 @@
 /// <reference types="google.maps" />
 import { setOptions, importLibrary } from "@googlemaps/js-api-loader";
+import { env } from "@/config/env";
 
 let loadPromise: Promise<void> | null = null;
 
@@ -8,7 +9,7 @@ let loadPromise: Promise<void> | null = null;
  * Places API (New) and importLibrary are available.
  */
 export function loadGoogleMaps(): Promise<void> {
-  const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const key = env.googleMapsApiKey;
   if (!key) return Promise.reject(new Error("VITE_GOOGLE_MAPS_API_KEY is not set"));
   if (loadPromise) return loadPromise;
   loadPromise = (async () => {

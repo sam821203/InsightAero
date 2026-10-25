@@ -14,6 +14,7 @@ import type {
 } from "@/types/telemetry";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n";
+import { env } from "@/config/env";
 
 function buildDroneInfoContent(
   telemetry: TelemetryPacket | undefined,
@@ -711,7 +712,7 @@ export default function GoogleMapView({
     }
   }
 
-  const hasKey = Boolean(import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
+  const hasKey = Boolean(env.googleMapsApiKey);
   if (!hasKey) {
     return (
       <div className="flex w-full h-full items-center justify-center rounded-lg border border-border bg-card shadow-raised text-muted-foreground text-sm">
