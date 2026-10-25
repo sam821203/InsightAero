@@ -1,5 +1,5 @@
 import { memo } from "react";
-import type { TelemetryPacket } from "@/types/telemetry";
+import { selectActiveTelemetry, useTelemetryStore } from "@/stores/telemetryStore";
 import { Activity, Compass, Gauge, MapPin, Mountain, Zap } from "lucide-react";
 import { Panel } from "@/components/ui/panel";
 import { useTranslation } from "react-i18next";
@@ -9,7 +9,6 @@ const VALUE = "text-2xl font-semibold leading-tight tracking-tight tabular-nums"
 const UNIT = "min-h-[14px] text-xs leading-tight text-subtle-foreground";
 
 interface Props {
-  telemetry: TelemetryPacket;
   /** 目前選中的無人機名稱，顯示在左側卡片區塊 */
   activeDroneLabel?: string;
 }
@@ -55,8 +54,10 @@ function GaugeCard({
   );
 }
 
-function TelemetryHUDInner({ telemetry, activeDroneLabel }: Props) {
+function TelemetryHUDInner({ activeDroneLabel }: Props) {
   const { t } = useTranslation();
+  // Re-renders only when the selected drone sends a packet.
+  const telemetry = useTelemetryStore(selectActiveTelemetry);
   const batteryPct = Math.max(0, telemetry.battery);
   const level = batteryLevel(telemetry.battery);
 
@@ -99,5 +100,5 @@ function TelemetryHUDInner({ telemetry, activeDroneLabel }: Props) {
   );
 }
 
-/** Memoized to avoid re-renders when parent updates from WebSocket; only re-renders when telemetry or activeDroneLabel change. */
+/** Memoized so parent re-renders (e.g. drone list changes) don't re-render the HUD. */
 export default memo(TelemetryHUDInner);

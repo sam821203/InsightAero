@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { PanelTitle } from "@/components/ui/panel";
 import { diagnoseSession, diagnoseTelemetry } from "@/api/diagnose";
 import type { ApiError } from "@/api/client";
+import {
+  selectActiveTelemetry,
+  selectHasLiveTelemetry,
+  selectIsRunning,
+  useTelemetryStore,
+} from "@/stores/telemetryStore";
 import { useTranslation } from "react-i18next";
 import { formatClockTime } from "@/lib/format";
 import type { Messages } from "@/locales/types";
@@ -87,16 +93,14 @@ function generateInsight(t: TelemetryPacket, prev: TelemetryPacket | null): Omit
 }
 
 interface Props {
-  telemetry: TelemetryPacket;
-  isRunning: boolean;
-  /** 是否有選中無人機且具遙測可取得診斷（未傳時沿用 isRunning） */
-  canGetDiagnostic?: boolean;
   /** 隱藏標題列（用於嵌入浮動 dialog 時，標題已在 dialog header 顯示） */
   hideTitle?: boolean;
 }
 
-export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnostic, hideTitle }: Props) {
+export default function AIDiagnosticPanel({ hideTitle }: Props) {
   const { t, i18n } = useTranslation();
+  const isRunning = useTelemetryStore(selectIsRunning);
+  const canDiagnose = useTelemetryStore(selectHasLiveTelemetry);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isDiagnosing, setIsDiagnosing] = useState(false);
   const prevRef = useRef<TelemetryPacket | null>(null);
@@ -110,10 +114,11 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
     ]);
   }, []);
 
-  const canDiagnose = canGetDiagnostic ?? isRunning;
   const handleDiagnose = useCallback(async () => {
     if (isDiagnosing || !canDiagnose) return;
     setIsDiagnosing(true);
+    // Read the latest packet at click time instead of subscribing to every update.
+    const telemetry = selectActiveTelemetry(useTelemetryStore.getState());
     try {
       const data =
         telemetry.session_id != null
@@ -127,7 +132,7 @@ export default function AIDiagnosticPanel({ telemetry, isRunning, canGetDiagnost
     } finally {
       setIsDiagnosing(false);
     }
-  }, [telemetry, canDiagnose, isDiagnosing, appendLog]);
+  }, [canDiagnose, isDiagnosing, appendLog]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
