@@ -360,6 +360,8 @@ export default function GoogleMapView({
             styles: MAP_STYLES[initialTheme],
             disableDefaultUI: true,
             zoomControl: true,
+            // Top-right keeps the zoom buttons clear of the telemetry bar at the bottom.
+            zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
             backgroundColor: MAP_BG[initialTheme],
           });
 
