@@ -20,7 +20,8 @@ import {
   type DroneResponse,
 } from "@/api/drones";
 import type { ApiError } from "@/api/client";
-import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
+import { PanelHeader } from "@/components/ui/panel";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 
@@ -30,9 +31,10 @@ type DeleteError = { key: "deleteBlocked" | "deleteFailed" } | { message: string
 interface MyDronesListProps {
   /** 當此值變動時會重新取得無人機列表（例如任務開始/取消/完成後，管理區塊的「待命/飛行中」會同步） */
   refreshTrigger?: string;
+  className?: string;
 }
 
-export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
+export default function MyDronesList({ refreshTrigger, className }: MyDronesListProps) {
   const { t } = useTranslation();
   const [drones, setDrones] = useState<DroneResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,9 +139,11 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
   };
 
   return (
-    <Panel>
+    <div className={cn("flex min-h-0 flex-col", className)}>
       <PanelHeader>
-        <PanelTitle>{t("drones.title")}</PanelTitle>
+        <span className="text-xs text-muted-foreground">
+          {loading ? t("common.loading") : t("drones.count", { count: drones.length })}
+        </span>
         <Button
           type="button"
           variant="ghost"
@@ -185,7 +189,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
           </Button>
         </div>
       )}
-      <ScrollArea className="h-[180px]">
+      <ScrollArea className="min-h-0 flex-1">
         {loading ? (
           <div className="p-3 text-xs text-muted-foreground">{t("common.loading")}</div>
         ) : drones.length === 0 ? (
@@ -313,6 +317,6 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Panel>
+    </div>
   );
 }

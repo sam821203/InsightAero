@@ -66,8 +66,16 @@ const en = {
     tailwind: "tailwind",
     crosswind: "crosswind",
   },
+  sidebar: {
+    label: "Operations",
+    missions: "Missions",
+    fleet: "Fleet",
+    history: "History",
+    activeCount: "{{count}} active",
+  },
   taskForm: {
     title: "New mission",
+    description: "Choose drones and a destination. Drones that have flown before take off from where they last landed.",
     nameLabel: "Mission name (optional)",
     namePlaceholder: "e.g. Morning patrol",
     dronesLabel: "Assign drones",
@@ -125,6 +133,8 @@ const en = {
   },
   drones: {
     title: "Drones",
+    count_one: "{{count}} drone",
+    count_other: "{{count}} drones",
     namePlaceholder: "Drone name",
     nameShort: "Name",
     speedPlaceholder: "Speed",
@@ -141,6 +151,7 @@ const en = {
     title: "Flight history",
     empty: "No flights yet",
     fallbackName: "Flight {{id}}",
+    hint: "Select a flight to show its path on the map.",
   },
   map: {
     missingKey: "Set VITE_GOOGLE_MAPS_API_KEY to show the map",

@@ -6,7 +6,6 @@ import DestinationAddressInput from "@/components/DestinationAddressInput";
 import { geocodeAddress } from "@/utils/geocode";
 import type { TaskCreateBody, TaskCreateAssignmentInput } from "@/types/task";
 import { fetchDrones, type DroneResponse } from "@/api/drones";
-import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import type { Messages } from "@/locales/types";
@@ -182,193 +181,187 @@ export default function TaskCreateForm({
   };
 
   return (
-    <Panel>
-      <PanelHeader>
-        <PanelTitle>{t("taskForm.title")}</PanelTitle>
-      </PanelHeader>
-      <form onSubmit={handleSubmit} className="space-y-3 p-2">
-        <div>
-          <label className="text-[11px] text-muted-foreground">{t("taskForm.nameLabel")}</label>
-          <Input
-            size="sm"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t("taskForm.namePlaceholder")}
-            className="mt-0.5"
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="text-[11px] text-muted-foreground">{t("taskForm.nameLabel")}</label>
+        <Input
+          size="sm"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t("taskForm.namePlaceholder")}
+          className="mt-0.5"
+        />
+      </div>
 
-        {/* 指派無人機（先選，再依所選決定是否需填起點） */}
-        <div className="space-y-2 max-h-[160px] overflow-y-auto">
-          <label className="text-[11px] text-muted-foreground block">{t("taskForm.dronesLabel")}</label>
-          {droneIds.map((droneId, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-2 text-[11px]"
+      {/* 指派無人機（先選，再依所選決定是否需填起點） */}
+      <div className="space-y-2">
+        <label className="text-[11px] text-muted-foreground block">{t("taskForm.dronesLabel")}</label>
+        {droneIds.map((droneId, index) => (
+          <div
+            key={index}
+            className="flex items-center gap-2 text-[11px]"
+          >
+            <NativeSelect
+              value={droneId || ""}
+              onChange={(e) => updateDroneId(index, Number(e.target.value))}
+              size="sm"
+              className="flex-1"
             >
-              <NativeSelect
-                value={droneId || ""}
-                onChange={(e) => updateDroneId(index, Number(e.target.value))}
-                size="sm"
-                className="flex-1"
-              >
-                <option value="">{t("taskForm.selectDrone")}</option>
-                {assignableDrones.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </NativeSelect>
-              {droneIds.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => removeRow(index)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* 起點：依所選無人機是否有上次終止位置決定是否顯示輸入 */}
-        {validDroneIds.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground">{t("taskForm.selectDroneFirst")}</p>
-        ) : needStartInput ? (
-          <div className="space-y-1.5">
-            <label className="text-[11px] text-muted-foreground">{t("taskForm.startLabel")}</label>
-            <p className="text-[11px] text-muted-foreground">
-              {t("taskForm.startHint")}
-            </p>
-            <div className="flex gap-2 items-center">
-              <DestinationAddressInput
-                value={startInput}
-                onChange={(v) => {
-                  setStartInput(v);
-                  setConfirmedStart(null);
-                }}
-                onPlaceSelect={(result) => {
-                  setStartInput(result.formattedAddress);
-                  setConfirmedStart({ lat: result.lat, lng: result.lng });
-                }}
-                placeholder={t("taskForm.startPlaceholder")}
-              />
+              <option value="">{t("taskForm.selectDrone")}</option>
+              {assignableDrones.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </NativeSelect>
+            {droneIds.length > 1 && (
               <Button
                 type="button"
-                variant="secondary"
+                variant="ghost"
                 size="sm"
-                onClick={handleLocateStart}
-                disabled={isLocatingStart || !startInput.trim()}
-                className="shrink-0 text-xs"
+                className="h-6 w-6 p-0"
+                onClick={() => removeRow(index)}
               >
-                {isLocatingStart ? t("common.locating") : t("common.locate")}
+                <Trash2 className="h-3 w-3" />
               </Button>
-            </div>
-            {confirmedStart && startInput && (
-              <p className="text-[11px] text-muted-foreground truncate" title={startInput}>
-                {t("taskForm.startConfirmed", { address: startInput })}
-              </p>
             )}
           </div>
-        ) : (
-          <div className="space-y-0.5">
-            <span className="text-[11px] text-muted-foreground">{t("taskForm.startShort")}</span>
-            <p className="text-[11px] text-foreground">{t("taskForm.startFromLastPosition")}</p>
-          </div>
-        )}
+        ))}
+      </div>
 
-        {/* 終點地址：須先選無人機且起點（若需要）已填寫後才可填 */}
+      {/* 起點：依所選無人機是否有上次終止位置決定是否顯示輸入 */}
+      {validDroneIds.length === 0 ? (
+        <p className="text-[11px] text-muted-foreground">{t("taskForm.selectDroneFirst")}</p>
+      ) : needStartInput ? (
         <div className="space-y-1.5">
-          <label className="text-[11px] text-muted-foreground">{t("taskForm.destinationLabel")}</label>
-          {!destinationEnabled ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="inline-flex w-full gap-2 items-center cursor-not-allowed">
-                  <DestinationAddressInput
-                    value={destinationInput}
-                    onChange={(v) => {
-                      setDestinationInput(v);
-                      setConfirmedDestination(null);
-                    }}
-                    onPlaceSelect={(result) => {
-                      setDestinationInput(result.formattedAddress);
-                      setConfirmedDestination({ lat: result.lat, lng: result.lng });
-                    }}
-                    placeholder={t("taskForm.destinationPlaceholder")}
-                    disabled
-                  />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    disabled
-                    className="shrink-0 text-xs"
-                  >
-                    {t("common.locate")}
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[220px]">
-                {t("taskForm.destinationDisabledHint")}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <div className="flex gap-2 items-center">
-              <DestinationAddressInput
-                value={destinationInput}
-                onChange={(v) => {
-                  setDestinationInput(v);
-                  setConfirmedDestination(null);
-                }}
-                onPlaceSelect={(result) => {
-                  setDestinationInput(result.formattedAddress);
-                  setConfirmedDestination({ lat: result.lat, lng: result.lng });
-                }}
-                placeholder={t("taskForm.destinationPlaceholder")}
-              />
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleLocateDestination}
-                disabled={isLocatingDestination || !destinationInput.trim()}
-                className="shrink-0 text-xs"
-              >
-                {isLocatingDestination ? t("common.locating") : t("common.locate")}
-              </Button>
-            </div>
-          )}
-          {confirmedDestination && destinationInput && (
-            <p className="text-[11px] text-muted-foreground truncate" title={destinationInput}>
-              {t("taskForm.destinationConfirmed", { address: destinationInput })}
+          <label className="text-[11px] text-muted-foreground">{t("taskForm.startLabel")}</label>
+          <p className="text-[11px] text-muted-foreground">
+            {t("taskForm.startHint")}
+          </p>
+          <div className="flex gap-2 items-center">
+            <DestinationAddressInput
+              value={startInput}
+              onChange={(v) => {
+                setStartInput(v);
+                setConfirmedStart(null);
+              }}
+              onPlaceSelect={(result) => {
+                setStartInput(result.formattedAddress);
+                setConfirmedStart({ lat: result.lat, lng: result.lng });
+              }}
+              placeholder={t("taskForm.startPlaceholder")}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleLocateStart}
+              disabled={isLocatingStart || !startInput.trim()}
+              className="shrink-0 text-xs"
+            >
+              {isLocatingStart ? t("common.locating") : t("common.locate")}
+            </Button>
+          </div>
+          {confirmedStart && startInput && (
+            <p className="text-[11px] text-muted-foreground truncate" title={startInput}>
+              {t("taskForm.startConfirmed", { address: startInput })}
             </p>
           )}
         </div>
+      ) : (
+        <div className="space-y-0.5">
+          <span className="text-[11px] text-muted-foreground">{t("taskForm.startShort")}</span>
+          <p className="text-[11px] text-foreground">{t("taskForm.startFromLastPosition")}</p>
+        </div>
+      )}
 
-        {error && (
-          <p className="text-[11px] text-destructive-text">
-            {"key" in error ? t(`taskForm.errors.${error.key}`) : error.message}
+      {/* 終點地址：須先選無人機且起點（若需要）已填寫後才可填 */}
+      <div className="space-y-1.5">
+        <label className="text-[11px] text-muted-foreground">{t("taskForm.destinationLabel")}</label>
+        {!destinationEnabled ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex w-full gap-2 items-center cursor-not-allowed">
+                <DestinationAddressInput
+                  value={destinationInput}
+                  onChange={(v) => {
+                    setDestinationInput(v);
+                    setConfirmedDestination(null);
+                  }}
+                  onPlaceSelect={(result) => {
+                    setDestinationInput(result.formattedAddress);
+                    setConfirmedDestination({ lat: result.lat, lng: result.lng });
+                  }}
+                  placeholder={t("taskForm.destinationPlaceholder")}
+                  disabled
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled
+                  className="shrink-0 text-xs"
+                >
+                  {t("common.locate")}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[220px]">
+              {t("taskForm.destinationDisabledHint")}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <div className="flex gap-2 items-center">
+            <DestinationAddressInput
+              value={destinationInput}
+              onChange={(v) => {
+                setDestinationInput(v);
+                setConfirmedDestination(null);
+              }}
+              onPlaceSelect={(result) => {
+                setDestinationInput(result.formattedAddress);
+                setConfirmedDestination({ lat: result.lat, lng: result.lng });
+              }}
+              placeholder={t("taskForm.destinationPlaceholder")}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleLocateDestination}
+              disabled={isLocatingDestination || !destinationInput.trim()}
+              className="shrink-0 text-xs"
+            >
+              {isLocatingDestination ? t("common.locating") : t("common.locate")}
+            </Button>
+          </div>
+        )}
+        {confirmedDestination && destinationInput && (
+          <p className="text-[11px] text-muted-foreground truncate" title={destinationInput}>
+            {t("taskForm.destinationConfirmed", { address: destinationInput })}
           </p>
         )}
-        <Button
-          type="submit"
-          size="sm"
-          className="w-full gap-2 text-xs"
-          disabled={
-            submitting ||
-            assignableDrones.length === 0 ||
-            validDroneIds.length === 0 ||
-            !confirmedDestination ||
-            (needStartInput && !confirmedStart)
-          }
-        >
-          {submitting ? t("taskForm.submitting") : t("taskForm.submit")}
-        </Button>
-      </form>
-    </Panel>
+      </div>
+
+      {error && (
+        <p className="text-[11px] text-destructive-text">
+          {"key" in error ? t(`taskForm.errors.${error.key}`) : error.message}
+        </p>
+      )}
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={
+          submitting ||
+          assignableDrones.length === 0 ||
+          validDroneIds.length === 0 ||
+          !confirmedDestination ||
+          (needStartInput && !confirmedStart)
+        }
+      >
+        {submitting ? t("taskForm.submitting") : t("taskForm.submit")}
+      </Button>
+    </form>
   );
 }

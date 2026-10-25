@@ -15,6 +15,15 @@ import TaskList from "@/components/TaskList";
 import TaskDetailDialog from "@/components/TaskDetailDialog";
 import TaskCreateForm from "@/components/TaskCreateForm";
 import { Button } from "@/components/ui/button";
+import { Panel, PanelHeader } from "@/components/ui/panel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Satellite, Sun, Moon, Loader2 } from "lucide-react";
+import { Satellite, Sun, Moon, Loader2, Plus } from "lucide-react";
 import type { FlightPathPoint } from "@/types/telemetry";
 import type { TaskItem } from "@/types/task";
 import { useTasks } from "@/hooks/useTasks";
@@ -37,10 +46,14 @@ function isActiveTask(task: TaskItem): boolean {
   return (ACTIVE_TASK_STATUSES as readonly string[]).includes(task.status);
 }
 
+type SidebarTab = "missions" | "fleet" | "history";
+
 export default function Index() {
   const { t } = useTranslation();
   const [historyPath, setHistoryPath] = useState<FlightPathPoint[] | null>(null);
   const [isResizing, setIsResizing] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>("missions");
+  const [createOpen, setCreateOpen] = useState(false);
   const [lastEndPoint, setLastEndPoint] = useState<{
     lat: number;
     lng: number;
@@ -326,8 +339,9 @@ export default function Index() {
           </div>
         </div>
 
-        <div
-          className="relative shrink-0 flex flex-col gap-3 border-l border-border p-3"
+        <aside
+          aria-label={t("sidebar.label")}
+          className="relative flex shrink-0 flex-col border-l border-border p-3"
           style={{ width: sidebarWidth }}
         >
           <button
@@ -336,29 +350,86 @@ export default function Index() {
             onMouseDown={startResize}
             className={`absolute left-0 top-0 bottom-0 z-10 w-1 cursor-col-resize touch-none -translate-x-1/2 hover:bg-primary/20 transition-colors ${isResizing ? "bg-primary/40" : ""}`}
           />
-        <div className="flex flex-col gap-3 min-h-0 overflow-auto flex-1">
+          {/* One scroll container per tab, so lists never scroll inside a scrolling sidebar.
+              Tabs stay mounted (forceMount) to keep each list's state when switching. */}
+          <Panel className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <Tabs
+              value={sidebarTab}
+              onValueChange={(value) => setSidebarTab(value as SidebarTab)}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <TabsList>
+                <TabsTrigger value="missions">
+                  {t("sidebar.missions")}
+                  {activeTasks.length > 0 && (
+                    <span
+                      className="rounded-full bg-surface-selected px-1.5 text-[11px] font-semibold leading-4 tabular-nums text-interactive-text"
+                      aria-label={t("sidebar.activeCount", { count: activeTasks.length })}
+                    >
+                      {activeTasks.length}
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="fleet">{t("sidebar.fleet")}</TabsTrigger>
+                <TabsTrigger value="history">{t("sidebar.history")}</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="missions" forceMount className="flex min-h-0 flex-1 flex-col">
+                <PanelHeader>
+                  <span className="text-xs text-muted-foreground">
+                    {t("sidebar.activeCount", { count: activeTasks.length })}
+                  </span>
+                  <Button size="sm" className="h-7 gap-1 px-2.5 text-xs" onClick={() => setCreateOpen(true)}>
+                    <Plus className="h-3.5 w-3.5" aria-hidden />
+                    {t("taskForm.title")}
+                  </Button>
+                </PanelHeader>
+                <TaskList
+                  className="flex-1"
+                  tasks={tasks}
+                  onStart={handleStartTask}
+                  onPause={pauseTask}
+                  onResume={resumeTask}
+                  onCancel={handleCancelTask}
+                  onDelete={handleDeleteTask}
+                  onTaskClick={(id) => setSelectedTaskId(id)}
+                />
+              </TabsContent>
+
+              <TabsContent value="fleet" forceMount className="flex min-h-0 flex-1 flex-col">
+                <MyDronesList className="flex-1" refreshTrigger={droneRefreshTrigger} />
+              </TabsContent>
+
+              <TabsContent value="history" forceMount className="flex min-h-0 flex-1 flex-col">
+                <FlightSessionsList
+                  className="flex-1"
+                  onSelectSession={(_id, path) => setHistoryPath(path)}
+                />
+              </TabsContent>
+            </Tabs>
+          </Panel>
+        </aside>
+      </div>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t("taskForm.title")}</DialogTitle>
+            <DialogDescription>{t("taskForm.description")}</DialogDescription>
+          </DialogHeader>
           <TaskCreateForm
             effectiveStart={lastEndPoint}
             onCreate={createTask}
+            onSuccess={() => {
+              setCreateOpen(false);
+              setSidebarTab("missions");
+            }}
             onAddressError={() => setAddressErrorOpen(true)}
             refreshTrigger={droneRefreshTrigger}
             excludeDroneIds={droneIdsInActiveTasks}
           />
-          <TaskList
-            tasks={tasks}
-            onStart={handleStartTask}
-            onPause={pauseTask}
-            onResume={resumeTask}
-            onCancel={handleCancelTask}
-            onDelete={handleDeleteTask}
-            onTaskClick={(id) => setSelectedTaskId(id)}
-          />
-          <MyDronesList refreshTrigger={droneRefreshTrigger} />
-          <FlightSessionsList onSelectSession={(_id, path) => setHistoryPath(path)} />
-        </div>
-        </div>
-      </div>
-
+        </DialogContent>
+      </Dialog>
       <TaskDetailDialog
         open={selectedTaskId != null}
         onOpenChange={(open) => !open && setSelectedTaskId(null)}
