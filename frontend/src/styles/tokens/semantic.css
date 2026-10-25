@@ -83,10 +83,23 @@
   --color-info-border: var(--blue-800);
 
   /* Map overlays, drawn by Google Maps from JS */
+  /* Base map: low saturation so routes and markers carry the color */
+  --color-map-land: var(--gray-900);
+  --color-map-park: var(--sage-900);
+  --color-map-water: var(--steel-950);
+  --color-map-road: var(--gray-850);
+  --color-map-road-major: var(--gray-800);
+  --color-map-road-outline: var(--gray-950);
+  --color-map-boundary: var(--gray-700);
+  --color-map-label: var(--gray-500);
+  --color-map-label-halo: var(--gray-950);
+
   --color-map-route-active: var(--blue-400);
-  --color-map-route-history: var(--gray-500);
-  --color-map-route-planned: var(--gray-400);
-  --color-map-waypoint: var(--red-600);
+  --color-map-route-casing: var(--gray-1000);
+  --color-map-route-history: var(--gray-400);
+  --color-map-route-planned: var(--gray-300);
+  --color-map-marker-halo: var(--gray-50);
+  --color-map-waypoint: var(--red-500);
   --color-map-infowindow-bg: var(--gray-850);
   --color-map-infowindow-fg: var(--gray-50);
   --color-map-infowindow-muted: var(--gray-400);
@@ -148,9 +161,21 @@
   --color-info-subtle: var(--blue-50);
   --color-info-border: var(--blue-200);
 
+  --color-map-land: var(--gray-100);
+  --color-map-park: var(--sage-200);
+  --color-map-water: var(--steel-200);
+  --color-map-road: var(--gray-0);
+  --color-map-road-major: var(--gray-0);
+  --color-map-road-outline: var(--gray-200);
+  --color-map-boundary: var(--gray-300);
+  --color-map-label: var(--gray-500);
+  --color-map-label-halo: var(--gray-0);
+
   --color-map-route-active: var(--blue-600);
+  --color-map-route-casing: var(--gray-0);
   --color-map-route-history: var(--gray-500);
   --color-map-route-planned: var(--gray-600);
+  --color-map-marker-halo: var(--gray-0);
   --color-map-waypoint: var(--red-600);
   --color-map-infowindow-bg: var(--gray-0);
   --color-map-infowindow-fg: var(--gray-950);

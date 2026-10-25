@@ -4,6 +4,8 @@ import { useTheme } from "@/contexts/useTheme";
 import { getStoredTheme } from "@/contexts/themeStorage";
 import { loadGoogleMaps } from "@/utils/geocode";
 import { readColorToken, readHexToken } from "@/lib/tokens";
+import { buildMapStyle, mapBackground } from "@/lib/mapStyle";
+import { Trail, plannedRouteOptions, type TrailStyle } from "@/lib/mapTrail";
 import type {
   FlightPathPoint,
   FlightPathByDrone,
@@ -42,7 +44,7 @@ function buildDroneInfoContent(
 </div>`;
 }
 
-/** 無人機圖示：使用 public/drone-marker.svg（OverlayView 內用同一張圖 + CSS filter 變色） */
+/** 無人機圖示：使用 public/drone-marker.svg，外圈光暈由 index.css 的 .drone-marker 處理 */
 const DRONE_ICON_URL = "/drone-marker.svg";
 const DRONE_ICON_WIDTH = 88;
 const DRONE_ICON_HEIGHT = 58;
@@ -51,11 +53,7 @@ const DRONE_ICON_OVERLAY_PADDING = 32;
 const DRONE_ICON_OVERLAY_WIDTH = DRONE_ICON_WIDTH + DRONE_ICON_OVERLAY_PADDING * 2;
 const DRONE_ICON_OVERLAY_HEIGHT = DRONE_ICON_HEIGHT + DRONE_ICON_OVERLAY_PADDING * 2;
 
-const DRONE_PATH_OPACITY = 0.5;
-const DRONE_PATH_WEIGHT = 4;
 
-/** 地圖 overlay 外層 div 的 class：dark 主題與 active 由 index.css 對子元素 img 套 filter */
-const DRONE_MARKER_DARK_CLASS = "drone-marker--dark";
 
 /** 起點／終點 marker 圖示，顏色取自 --color-map-waypoint token */
 const MAP_MARKER_FLAG_SVG_PATH =
@@ -135,6 +133,7 @@ function getDroneMarkerOverlayClass(): typeof DroneMarkerOverlayClass {
 
     onAdd(): void {
       const div = document.createElement("div");
+      div.className = "drone-marker";
       div.style.position = "absolute";
       div.style.cursor = "pointer";
       div.style.width = `${DRONE_ICON_OVERLAY_WIDTH}px`;
@@ -146,7 +145,6 @@ function getDroneMarkerOverlayClass(): typeof DroneMarkerOverlayClass {
       div.style.alignItems = "center";
       div.style.justifyContent = "center";
       div.title = this.title;
-      if (this.theme === "dark") div.classList.add(DRONE_MARKER_DARK_CLASS);
       if (this.isActive) div.classList.add(DRONE_MARKER_ACTIVE_CLASS);
 
       const img = document.createElement("img");
@@ -201,11 +199,8 @@ function getDroneMarkerOverlayClass(): typeof DroneMarkerOverlayClass {
 
     setTheme(theme: Theme): void {
       if (this.theme === theme) return;
+      // Marker colors come from CSS variables, which already follow the theme.
       this.theme = theme;
-      if (this.div) {
-        if (theme === "dark") this.div.classList.add(DRONE_MARKER_DARK_CLASS);
-        else this.div.classList.remove(DRONE_MARKER_DARK_CLASS);
-      }
     }
 
     setTitle(title: string): void {
@@ -230,37 +225,6 @@ function getDroneMarkerOverlayClass(): typeof DroneMarkerOverlayClass {
   return DroneMarkerOverlayClass;
 }
 
-/** 模仿 Google Map：山＝綠（植被）＋淺咖啡（地形），水藍，陸地米色/深灰 */
-const DARK_MAP_STYLE: google.maps.MapTypeStyle[] = [
-  { elementType: "labels.text.stroke", stylers: [{ color: "#1a1a1a" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#9aa0a6" }] },
-  { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#323338" }] },
-  { featureType: "landscape.natural.terrain", elementType: "geometry", stylers: [{ color: "#4a4035" }] },
-  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#388e3c" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#1a3a52" }] },
-  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#388e3c" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#2d3136" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#1f2225" }] },
-  { featureType: "poi", elementType: "geometry", stylers: [{ color: "#3c4043" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-];
-
-const LIGHT_MAP_STYLE: google.maps.MapTypeStyle[] = [
-  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#5f6368" }] },
-  { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#f5f0e6" }] },
-  { featureType: "landscape.natural.terrain", elementType: "geometry", stylers: [{ color: "#c4b896" }] },
-  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#c8e6c9" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#aad3df" }] },
-  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#c8e6c9" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#e0e0e0" }] },
-  { featureType: "poi", elementType: "geometry", stylers: [{ color: "#fafafa" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-];
-
-const MAP_STYLES = { dark: DARK_MAP_STYLE, light: LIGHT_MAP_STYLE } as const;
-const MAP_BG = { dark: "#323338", light: "#f5f0e6" } as const;
 
 interface Props {
   telemetryByDrone: TelemetryByDrone;
@@ -323,7 +287,7 @@ export default function GoogleMapView({
   const mountedCountRef = useRef(0);
   const expectedDroneCountRef = useRef(0);
   const allMountedNotifiedRef = useRef(false);
-  const polylinesRef = useRef<Record<number, google.maps.Polyline>>({});
+  const polylinesRef = useRef<Record<number, Trail>>({});
   const historyPolylineRef = useRef<google.maps.Polyline | null>(null);
   const originMarkerRef = useRef<google.maps.Marker | null>(null);
   const destinationMarkerRef = useRef<google.maps.Marker | null>(null);
@@ -357,12 +321,12 @@ export default function GoogleMapView({
           const map = new google.maps.Map(container, {
             center: { lat, lng },
             zoom: 15,
-            styles: MAP_STYLES[initialTheme],
+            styles: buildMapStyle(initialTheme),
             disableDefaultUI: true,
             zoomControl: true,
             // Top-right keeps the zoom buttons clear of the telemetry bar at the bottom.
             zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
-            backgroundColor: MAP_BG[initialTheme],
+            backgroundColor: mapBackground(initialTheme),
           });
 
           if (cancelled) return;
@@ -403,7 +367,7 @@ export default function GoogleMapView({
 
   useEffect(() => {
     if (!mapRef.current) return;
-    mapRef.current.setOptions({ styles: MAP_STYLES[theme], backgroundColor: MAP_BG[theme] });
+    mapRef.current.setOptions({ styles: buildMapStyle(theme), backgroundColor: mapBackground(theme) });
   }, [theme]);
 
   // 無無人機時讓地圖中心跟隨傳入的 lat/lng（例如 refresh 後 userLocation 取得時置中到目前位置）
@@ -448,7 +412,11 @@ export default function GoogleMapView({
     if (!map) return;
 
     telemetryByDroneRef.current = telemetryByDrone;
-    const pathColor = readColorToken("color-map-route-active", theme);
+    const trailStyle = (id: number): TrailStyle => ({
+      color: readColorToken("color-map-route-active", theme),
+      casingColor: readColorToken("color-map-route-casing", theme),
+      emphasized: id === selectedDroneId || droneIds.length === 1,
+    });
 
     for (const id of Object.keys(overlaysRef.current).map(Number)) {
       const shouldRemove = !droneIds.includes(id);
@@ -506,14 +474,11 @@ export default function GoogleMapView({
         );
         overlay.setMap(map);
         overlaysRef.current[id] = overlay;
-        polylinesRef.current[id] = new google.maps.Polyline({
-          path: path.map((p) => ({ lat: p.lat, lng: p.lng })),
-          geodesic: true,
-          strokeColor: pathColor,
-          strokeOpacity: DRONE_PATH_OPACITY,
-          strokeWeight: DRONE_PATH_WEIGHT,
+        polylinesRef.current[id] = new Trail(
           map,
-        });
+          path.map((p) => ({ lat: p.lat, lng: p.lng })),
+          trailStyle(id)
+        );
       } else {
         const overlay = overlaysRef.current[id];
         overlay.setPosition(new google.maps.LatLng(position.lat, position.lng));
@@ -521,7 +486,7 @@ export default function GoogleMapView({
         overlay.setTitle("");
         overlay.setActive(id === selectedDroneId);
         polylinesRef.current[id].setPath(path.map((p) => ({ lat: p.lat, lng: p.lng })));
-        polylinesRef.current[id].setOptions({ strokeColor: pathColor });
+        polylinesRef.current[id].setStyle(trailStyle(id));
       }
     });
   }, [
@@ -560,8 +525,9 @@ export default function GoogleMapView({
         path: historyPath.map((p) => ({ lat: p.lat, lng: p.lng })),
         geodesic: true,
         strokeColor,
-        strokeOpacity: 0.7,
-        strokeWeight: 2,
+        strokeOpacity: 0.85,
+        strokeWeight: 3,
+        clickable: false,
         map,
       });
     } else {
@@ -669,14 +635,11 @@ export default function GoogleMapView({
       });
       taskAssignmentMarkersRef.current.push(startM, destM);
       const line = new google.maps.Polyline({
+        ...plannedRouteOptions(readColorToken("color-map-route-planned", theme)),
         path: [
           { lat: a.start_lat, lng: a.start_lng },
           { lat: a.dest_lat, lng: a.dest_lng },
         ],
-        geodesic: true,
-        strokeColor: readColorToken("color-map-route-planned", theme),
-        strokeOpacity: 0.5,
-        strokeWeight: 2,
         map,
       });
       taskAssignmentLinesRef.current.push(line);
@@ -688,7 +651,11 @@ export default function GoogleMapView({
     if (map) {
       telemetryByDroneRef.current = telemetryByDrone;
       const legacyT = telemetryByDrone[0];
-      const pathColor = readColorToken("color-map-route-active", themeRef.current);
+      const legacyTrailStyle: TrailStyle = {
+        color: readColorToken("color-map-route-active", themeRef.current),
+        casingColor: readColorToken("color-map-route-casing", themeRef.current),
+        emphasized: true,
+      };
       if (overlaysRef.current[0] === undefined) {
         expectedDroneCountRef.current = 1;
         mountedCountRef.current = 0;
@@ -728,21 +695,18 @@ export default function GoogleMapView({
         );
         overlay.setMap(map);
         overlaysRef.current[0] = overlay;
-        polylinesRef.current[0] = new google.maps.Polyline({
-          path: flightPath.map((p) => ({ lat: p.lat, lng: p.lng })),
-          geodesic: true,
-          strokeColor: pathColor,
-          strokeOpacity: DRONE_PATH_OPACITY,
-          strokeWeight: DRONE_PATH_WEIGHT,
+        polylinesRef.current[0] = new Trail(
           map,
-        });
+          flightPath.map((p) => ({ lat: p.lat, lng: p.lng })),
+          legacyTrailStyle
+        );
       }
       if (overlaysRef.current[0]) {
         overlaysRef.current[0].setPosition(new google.maps.LatLng(lat, lng));
         overlaysRef.current[0].setTitle("");
         overlaysRef.current[0].setTheme(themeRef.current);
         polylinesRef.current[0]?.setPath(flightPath.map((p) => ({ lat: p.lat, lng: p.lng })));
-        polylinesRef.current[0]?.setOptions({ strokeColor: pathColor });
+        polylinesRef.current[0]?.setStyle(legacyTrailStyle);
       }
     }
   }
