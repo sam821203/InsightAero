@@ -10,6 +10,7 @@ import {
   deleteTask,
   getTask,
   getTaskReport,
+  isNoReportYet,
   pauseTask,
   resumeTask,
   startTask,
@@ -17,7 +18,6 @@ import {
 } from "./missions.api";
 
 const REPORT_POLL_MS = 3000;
-const NO_REPORT_YET = "No report yet";
 
 export function useTask(taskId: number, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
@@ -39,10 +39,6 @@ export function useTaskReport(taskId: number) {
       return failureCount < 2;
     },
   });
-}
-
-export function isNoReportYet(error: unknown): boolean {
-  return error instanceof Error && error.message === NO_REPORT_YET;
 }
 
 type ActionKey = "create" | "start" | "pause" | "resume" | "cancel" | "delete";

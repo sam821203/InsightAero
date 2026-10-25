@@ -6,7 +6,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { isNoReportYet, useTask, useTaskReport } from "@/features/missions/api/missions.queries";
+import { isNoReportYet } from "@/features/missions/api/missions.api";
+import { useTask, useTaskReport } from "@/features/missions/api/missions.queries";
 import { PanelTitle } from "@/components/ui/panel";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/lib/format";

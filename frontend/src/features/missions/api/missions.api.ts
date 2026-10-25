@@ -19,6 +19,13 @@ export function getTaskReport(taskId: number): Promise<TaskReportResponse> {
   return apiFetch<TaskReportResponse>(`${TASKS_BASE}/${taskId}/report`);
 }
 
+/** The backend answers the report request with this detail until the report exists. */
+const NO_REPORT_YET = "No report yet";
+
+export function isNoReportYet(error: unknown): boolean {
+  return error instanceof Error && error.message === NO_REPORT_YET;
+}
+
 export function createTask(body: TaskCreateBody): Promise<TaskItem> {
   return apiFetch<TaskItem>(TASKS_BASE, {
     method: "POST",
