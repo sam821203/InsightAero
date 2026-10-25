@@ -7,12 +7,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { fetchTask, fetchTaskReport, type TaskReportResponse } from "@/hooks/useTasks";
+import { fetchTask, fetchTaskReport, type TaskReportResponse } from "@/hooks/use-tasks";
 import { PanelTitle } from "@/components/ui/panel";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/lib/format";
-import { errorMessage } from "@/lib/errorMessage";
-import { AssignmentStatusBadge, TaskStatusBadge } from "@/components/StatusBadge";
+import { errorMessage } from "@/lib/error-message";
+import { AssignmentStatusBadge, TaskStatusBadge } from "@/components/status-badge";
 
 function ReportBlock({ taskId }: { taskId: number }) {
   const { t, i18n } = useTranslation();

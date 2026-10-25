@@ -1,5 +1,5 @@
 import { Toaster as Sonner } from "sonner";
-import { useTheme } from "@/contexts/useTheme";
+import { useTheme } from "@/contexts/use-theme";
 
 /** App-wide toast outlet, styled with the semantic tokens and following the theme. */
 export function Toaster() {

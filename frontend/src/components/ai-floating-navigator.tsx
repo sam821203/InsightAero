@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Bot, BrainCircuit, X } from "lucide-react";
-import AIDiagnosticPanel from "@/components/AIDiagnosticPanel";
+import AIDiagnosticPanel from "@/components/ai-diagnostic-panel";
 import { PanelTitle } from "@/components/ui/panel";
 import { useTranslation } from "react-i18next";
 

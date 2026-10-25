@@ -1,11 +1,11 @@
 /// <reference types="google.maps" />
 import { useEffect, useRef } from "react";
-import { useTheme } from "@/contexts/useTheme";
-import { getStoredTheme } from "@/contexts/themeStorage";
+import { useTheme } from "@/contexts/use-theme";
+import { getStoredTheme } from "@/contexts/theme-storage";
 import { loadGoogleMaps } from "@/utils/geocode";
 import { readColorToken, readHexToken } from "@/lib/tokens";
-import { buildMapStyle, mapBackground } from "@/lib/mapStyle";
-import { Trail, plannedRouteOptions, type TrailStyle } from "@/lib/mapTrail";
+import { buildMapStyle, mapBackground } from "@/lib/map-style";
+import { Trail, plannedRouteOptions, type TrailStyle } from "@/lib/map-trail";
 import type {
   FlightPathPoint,
   FlightPathByDrone,

@@ -1,6 +1,6 @@
 import { memo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useTelemetryStore } from "@/stores/telemetryStore";
+import { useTelemetryStore } from "@/stores/telemetry-store";
 import {
   batteryLevel,
   distanceMeters,

@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { Theme } from "./themeStorage";
+import type { Theme } from "./theme-storage";
 
 export type ThemeContextValue = {
   theme: Theme;

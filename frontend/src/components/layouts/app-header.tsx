@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Moon, Satellite, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { useTheme } from "@/contexts/useTheme";
+import LanguageSwitcher from "@/components/language-switcher";
+import { useTheme } from "@/contexts/use-theme";
 
 interface AppHeaderProps {
   /** Status shown before the language and theme controls (e.g. the live-link indicator). */

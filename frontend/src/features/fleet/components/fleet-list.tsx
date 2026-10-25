@@ -21,9 +21,9 @@ import { PanelHeader } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
-import { DroneStatusBadge } from "@/components/StatusBadge";
-import { ListEmpty, ListError, ListLoading } from "@/components/ListState";
-import { errorMessage } from "@/lib/errorMessage";
+import { DroneStatusBadge } from "@/components/status-badge";
+import { ListEmpty, ListError, ListLoading } from "@/components/list-state";
+import { errorMessage } from "@/lib/error-message";
 
 /* Store the key, not translated text, so the message follows a language switch. */
 type DeleteError = { key: "deleteBlocked" | "deleteFailed" } | { message: string };

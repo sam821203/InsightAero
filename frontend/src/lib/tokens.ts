@@ -1,4 +1,4 @@
-import type { Theme } from "@/contexts/themeStorage";
+import type { Theme } from "@/contexts/theme-storage";
 
 /**
  * Read semantic color tokens from CSS so JavaScript-drawn UI (Google Maps

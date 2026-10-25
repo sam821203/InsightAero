@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useUIStore } from "@/stores/uiStore";
+import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
 
 interface ResizableSidebarProps {

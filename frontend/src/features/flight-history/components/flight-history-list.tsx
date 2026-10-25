@@ -8,8 +8,8 @@ import { useFlightSessions, useLoadFlightPath } from "@/features/flight-history/
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { formatShortDateTime } from "@/lib/format";
-import { errorMessage } from "@/lib/errorMessage";
-import { ListEmpty, ListError, ListLoading } from "@/components/ListState";
+import { errorMessage } from "@/lib/error-message";
+import { ListEmpty, ListError, ListLoading } from "@/components/list-state";
 
 interface Props {
   onSelectSession: (sessionId: number, path: FlightPathPoint[]) => void;

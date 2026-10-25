@@ -1,4 +1,4 @@
-import type { Theme } from "@/contexts/themeStorage";
+import type { Theme } from "@/contexts/theme-storage";
 import { readHexToken } from "@/lib/tokens";
 
 /**

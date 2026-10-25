@@ -1,16 +1,16 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useTelemetryConnection } from "@/hooks/useTelemetryConnection";
-import { liveDroneIdsOf, useTelemetryStore } from "@/stores/telemetryStore";
-import { useUserLocation, FALLBACK_CENTER } from "@/hooks/useUserLocation";
+import { useTelemetryConnection } from "@/hooks/use-telemetry-connection";
+import { liveDroneIdsOf, useTelemetryStore } from "@/stores/telemetry-store";
+import { useUserLocation, FALLBACK_CENTER } from "@/hooks/use-user-location";
 import { useDrones } from "@/api/drones.queries";
-import { useUIStore } from "@/stores/uiStore";
-import LiveMapView from "@/components/LiveMapView";
-import TelemetryHUD from "@/components/TelemetryHUD";
-import AIFloatingNavigator from "@/components/AIFloatingNavigator";
-import TaskList from "@/components/TaskList";
-import TaskDetailDialog from "@/components/TaskDetailDialog";
-import TaskCreateForm from "@/components/TaskCreateForm";
+import { useUIStore } from "@/stores/ui-store";
+import LiveMapView from "@/components/live-map-view";
+import TelemetryHUD from "@/components/telemetry-hud";
+import AIFloatingNavigator from "@/components/ai-floating-navigator";
+import TaskList from "@/components/task-list";
+import TaskDetailDialog from "@/components/task-detail-dialog";
+import TaskCreateForm from "@/components/task-create-form";
 import { Button } from "@/components/ui/button";
 import { PanelHeader } from "@/components/ui/panel";
 import {
@@ -32,13 +32,13 @@ import {
 import { Plus } from "lucide-react";
 import type { FlightPathPoint } from "@/types/telemetry";
 import type { TaskItem } from "@/types/task";
-import { useTasks } from "@/hooks/useTasks";
+import { useTasks } from "@/hooks/use-tasks";
 import { useTranslation } from "react-i18next";
 import AppHeader from "@/components/layouts/app-header";
 import PageLoader from "@/components/layouts/page-loader";
 import DashboardSidebar, { type SidebarTab } from "./dashboard-sidebar";
-import ConnectionIndicator from "@/components/ConnectionIndicator";
-import BackendStatusBanner from "@/components/BackendStatusBanner";
+import ConnectionIndicator from "@/components/connection-indicator";
+import BackendStatusBanner from "@/components/backend-status-banner";
 import { isBackendUnreachable } from "@/api/client";
 
 const ACTIVE_TASK_STATUSES = ["pending", "starting", "running", "paused"] as const;

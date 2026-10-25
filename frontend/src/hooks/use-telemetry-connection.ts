@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { TelemetryPacket } from "@/types/telemetry";
-import { useTelemetryStore } from "@/stores/telemetryStore";
-import { queryKeys } from "@/api/queryKeys";
+import { useTelemetryStore } from "@/stores/telemetry-store";
+import { queryKeys } from "@/api/query-keys";
 import { env } from "@/config/env";
 
 const WS_URL = env.telemetryWsUrl;
