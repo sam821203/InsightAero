@@ -24,7 +24,7 @@ Only add the folders a feature needs.
   `app/` composes them (e.g. the dashboard passes the selected flight path from
   flight history to the map).
 - **Data read by several features stays shared.** Drones are listed by fleet,
-  missions and the map, so reading them (`api/drones.api.ts` + `api/drones.api.hook.ts`)
+  missions and the map, so reading them (`api/drones.api.ts` + `api/drones.queries.ts`)
   is shared, while drone writes live in `features/fleet/api/`. Query keys stay in `api/queryKeys.ts`
   so any feature can invalidate them.
 - **Import files directly**, not through `index.ts` barrels (barrels hurt Vite's
@@ -37,19 +37,21 @@ Each feature's `api/` folder has two files, named after the feature:
 | File | Contains | Must not import |
 | --- | --- | --- |
 | `<feature>.api.ts` | Request functions (path, method, body) and response types | React, TanStack Query |
-| `<feature>.api.hook.ts` | Query options, `useQuery` / `useMutation` hooks, cache invalidation and other logic around the data | — |
+| `<feature>.queries.ts` | Query options, `useQuery` / `useMutation` hooks, cache invalidation and other logic around the data | — |
 
 ```
 features/flight-history/api/
   flight-history.api.ts        getFlightSessions(), getSessionTelemetry(), FlightSessionItem
-  flight-history.api.hook.ts   flightSessionsQueryOptions(), useFlightSessions(), useLoadFlightPath()
+  flight-history.queries.ts    flightSessionsQueryOptions(), useFlightSessions(), useLoadFlightPath()
 ```
 
 Request files stay plain async functions, so they can be called from tests,
-loaders or scripts without React.
+loaders or scripts without React. The `.queries.ts` name follows the TanStack
+Query "query options" style; it holds a feature's mutations too, so each
+feature has exactly one place for its data hooks.
 
 The shared `src/api/` folder uses the same pair, named after the resource
-(`drones.api.ts` + `drones.api.hook.ts`), since it isn't owned by one feature.
+(`drones.api.ts` + `drones.queries.ts`), since it isn't owned by one feature.
 
 ## Naming
 

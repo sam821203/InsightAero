@@ -3,7 +3,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useTelemetryConnection } from "@/hooks/useTelemetryConnection";
 import { liveDroneIdsOf, useTelemetryStore } from "@/stores/telemetryStore";
 import { useUserLocation, FALLBACK_CENTER } from "@/hooks/useUserLocation";
-import { useDrones } from "@/api/drones.api.hook";
+import { useDrones } from "@/api/drones.queries";
 import { useUIStore } from "@/stores/uiStore";
 import LiveMapView from "@/components/LiveMapView";
 import TelemetryHUD from "@/components/TelemetryHUD";
