@@ -52,12 +52,13 @@ InsightAero/
 │       │   ├── index.tsx     # <App />
 │       │   ├── provider.tsx  # Theme, React Query, Tooltip, Toaster
 │       │   ├── router.tsx    # route table
-│       │   └── routes/       # dashboard.tsx, not-found.tsx
+│       │   └── routes/       # dashboard/, not-found.tsx
 │       ├── config/           # env.ts (all VITE_* settings), paths.ts
-│       ├── api/              # fetch client, request functions, query keys
-│       ├── components/       # app components; ui/ holds shadcn-style primitives
+│       ├── features/         # code grouped by feature (fleet, flight-history, …); see features/README.md
+│       ├── api/              # shared: fetch client, query keys, data read by several features
+│       ├── components/       # shared components; ui/ = primitives, layouts/ = header, sidebar
 │       ├── contexts/         # theme context
-│       ├── hooks/            # data hooks (useTasks, useDrones, useFlightSessions) and telemetry connection
+│       ├── hooks/            # shared hooks: useTasks, telemetry connection, user location
 │       ├── i18n/ locales/    # react-i18next setup, en + zh-TW messages
 │       ├── lib/              # react-query config, map style, tokens bridge, formatting
 │       ├── stores/           # Zustand: telemetryStore, uiStore
@@ -271,8 +272,8 @@ flowchart TB
     HUD[TelemetryHUD]
     AI[AIDiagnosticPanel]
     Tasks[TaskList / TaskCreateForm]
-    Drones[MyDronesList]
-    Sessions[FlightSessionsList]
+    Drones[features/fleet]
+    Sessions[features/flight-history]
   end
   subgraph Data
     hooks[useDrones, useTasks, useTelemetry, useDroneMap]

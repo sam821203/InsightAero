@@ -3,8 +3,8 @@ import { History } from "lucide-react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { FlightPathPoint } from "@/types/telemetry";
-import type { FlightSessionItem } from "@/api/flightSessions";
-import { useFlightSessions, useLoadSessionPath } from "@/hooks/useFlightSessions";
+import { useFlightSessions, type FlightSessionItem } from "@/features/flight-history/api/getFlightSessions";
+import { useLoadFlightPath } from "@/features/flight-history/api/getFlightPath";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { formatShortDateTime } from "@/lib/format";
@@ -18,10 +18,10 @@ interface Props {
 
 const SESSION_LIMIT = 30;
 
-export default function FlightSessionsList({ onSelectSession, className }: Props) {
+export default function FlightHistoryList({ onSelectSession, className }: Props) {
   const { t, i18n } = useTranslation();
   const { sessions, loading, refetching, loadError, refetch } = useFlightSessions({ limit: SESSION_LIMIT });
-  const loadPath = useLoadSessionPath();
+  const loadPath = useLoadFlightPath();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   // Only the most recent click may update the map, even if an earlier request finishes later.
   const latestRequest = useRef<number | null>(null);

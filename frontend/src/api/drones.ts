@@ -1,4 +1,13 @@
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "./client";
+import { queryKeys } from "./queryKeys";
+import { retryWhileFailing } from "@/lib/query";
+
+/*
+ * Drones are read by several features (fleet, missions, the map), so the
+ * read side lives here in the shared API layer. Writes are only done by the
+ * fleet feature and live in features/fleet/api.
+ */
 
 export interface DroneResponse {
   id: number;
@@ -9,38 +18,34 @@ export interface DroneResponse {
   last_lng: number | null;
 }
 
-export interface DroneCreateBody {
-  name: string;
-  base_speed_m_min?: number;
-}
-
-export interface DroneUpdateBody {
-  name?: string;
-  base_speed_m_min?: number;
-}
-
 export async function fetchDrones(): Promise<DroneResponse[]> {
   const data = await apiFetch<DroneResponse[]>("/api/drones");
   return Array.isArray(data) ? data : [];
 }
 
-export async function createDrone(body: DroneCreateBody): Promise<DroneResponse> {
-  return apiFetch<DroneResponse>("/api/drones", {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
-}
+/*
+ * Drone data changes only when we change it (fleet mutations) or when a
+ * mission changes a drone's status (useTasks invalidates then). Between
+ * those, cached data is good, so new subscribers reuse it.
+ */
+const DRONES_STALE_MS = 30_000;
+const EMPTY: DroneResponse[] = [];
 
-export async function updateDrone(
-  droneId: number,
-  body: DroneUpdateBody
-): Promise<DroneResponse> {
-  return apiFetch<DroneResponse>(`/api/drones/${droneId}`, {
-    method: "PATCH",
-    body: JSON.stringify(body),
+export const dronesQueryOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.drones.all,
+    queryFn: fetchDrones,
+    staleTime: DRONES_STALE_MS,
+    refetchInterval: retryWhileFailing,
   });
-}
 
-export async function deleteDrone(droneId: number): Promise<void> {
-  await apiFetch(`/api/drones/${droneId}`, { method: "DELETE" });
+export function useDrones() {
+  const { data, isLoading, isFetching, error, refetch } = useQuery(dronesQueryOptions());
+  return {
+    drones: data ?? EMPTY,
+    loading: isLoading,
+    refetching: isFetching,
+    loadError: error,
+    refetch,
+  };
 }
