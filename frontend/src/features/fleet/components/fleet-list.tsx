@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Plane } from "lucide-react";
 import { toast } from "sonner";
-import type { DroneResponse } from "@/api/drones";
+import type { DroneResponse } from "@/api/drones.api";
 import type { ApiError } from "@/api/client";
-import { useDroneMutations, useDrones } from "@/hooks/useDrones";
+import { useDrones } from "@/api/drones.queries";
+import { useCreateDrone, useDeleteDrone, useUpdateDrone } from "@/features/fleet/api/fleet.queries";
 import { PanelHeader } from "@/components/ui/panel";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -27,14 +28,16 @@ import { errorMessage } from "@/lib/errorMessage";
 /* Store the key, not translated text, so the message follows a language switch. */
 type DeleteError = { key: "deleteBlocked" | "deleteFailed" } | { message: string };
 
-interface MyDronesListProps {
+interface FleetListProps {
   className?: string;
 }
 
-export default function MyDronesList({ className }: MyDronesListProps) {
+export default function FleetList({ className }: FleetListProps) {
   const { t } = useTranslation();
   const { drones, loading, refetching, loadError, refetch } = useDrones();
-  const { create, update, remove } = useDroneMutations();
+  const create = useCreateDrone();
+  const update = useUpdateDrone();
+  const remove = useDeleteDrone();
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState("");
