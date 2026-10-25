@@ -6,15 +6,16 @@ import {
   fetchSessionTelemetry,
   type FlightSessionItem,
 } from "@/api/flightSessions";
-import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { formatShortDateTime } from "@/lib/format";
 
 interface Props {
   onSelectSession: (sessionId: number, path: FlightPathPoint[]) => void;
+  className?: string;
 }
 
-export default function FlightSessionsList({ onSelectSession }: Props) {
+export default function FlightSessionsList({ onSelectSession, className }: Props) {
   const { t, i18n } = useTranslation();
   const [sessions, setSessions] = useState<FlightSessionItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,11 +52,11 @@ export default function FlightSessionsList({ onSelectSession }: Props) {
   };
 
   return (
-    <Panel>
-      <PanelHeader>
-        <PanelTitle>{t("sessions.title")}</PanelTitle>
-      </PanelHeader>
-      <ScrollArea className="h-[200px]">
+    <div className={cn("flex min-h-0 flex-col", className)}>
+      <p className="border-b border-border-subtle px-3 py-2.5 text-xs text-muted-foreground">
+        {t("sessions.hint")}
+      </p>
+      <ScrollArea className="min-h-0 flex-1">
         {loading ? (
           <div className="p-3 text-xs text-muted-foreground">{t("common.loading")}</div>
         ) : sessions.length === 0 ? (
@@ -83,6 +84,6 @@ export default function FlightSessionsList({ onSelectSession }: Props) {
           </ul>
         )}
       </ScrollArea>
-    </Panel>
+    </div>
   );
 }

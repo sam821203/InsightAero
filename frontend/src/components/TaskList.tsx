@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Rocket, Square, Pause, Play, Trash2 } from "lucide-react";
 import type { TaskItem } from "@/types/task";
-import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
 interface TaskListProps {
@@ -14,6 +14,7 @@ interface TaskListProps {
   onCancel: (taskId: number) => void;
   onDelete: (taskId: number) => void;
   onTaskClick?: (taskId: number) => void;
+  className?: string;
 }
 
 export default function TaskList({
@@ -24,6 +25,7 @@ export default function TaskList({
   onCancel,
   onDelete,
   onTaskClick,
+  className,
 }: TaskListProps) {
   const { t } = useTranslation();
   const [actingId, setActingId] = useState<number | null>(null);
@@ -70,11 +72,7 @@ export default function TaskList({
   };
 
   return (
-    <Panel>
-      <PanelHeader>
-        <PanelTitle>{t("tasks.title")}</PanelTitle>
-      </PanelHeader>
-      <ScrollArea className="h-[240px]">
+    <ScrollArea className={cn("min-h-0", className)}>
         {tasks.length === 0 ? (
           <div className="p-3 text-xs text-muted-foreground">{t("tasks.empty")}</div>
         ) : (
@@ -197,7 +195,6 @@ export default function TaskList({
             })}
           </ul>
         )}
-      </ScrollArea>
-    </Panel>
+    </ScrollArea>
   );
 }

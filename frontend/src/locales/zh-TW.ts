@@ -68,8 +68,16 @@ const zhTW: Messages = {
     tailwind: "順風",
     crosswind: "側風",
   },
+  sidebar: {
+    label: "作業面板",
+    missions: "任務",
+    fleet: "機隊",
+    history: "紀錄",
+    activeCount: "{{count}} 個進行中",
+  },
   taskForm: {
     title: "建立任務",
+    description: "選擇無人機與終點。飛行過的無人機會從上次降落的位置起飛。",
     nameLabel: "任務名稱（選填）",
     namePlaceholder: "例如：上午巡邏",
     dronesLabel: "指派無人機",
@@ -127,6 +135,8 @@ const zhTW: Messages = {
   },
   drones: {
     title: "管理無人機",
+    count_one: "{{count}} 台無人機",
+    count_other: "{{count}} 台無人機",
     namePlaceholder: "無人機名稱",
     nameShort: "名稱",
     speedPlaceholder: "速度",
@@ -142,6 +152,7 @@ const zhTW: Messages = {
     title: "飛行紀錄",
     empty: "尚無飛行紀錄",
     fallbackName: "飛行 {{id}}",
+    hint: "點選一筆紀錄，即可在地圖上顯示航跡。",
   },
   map: {
     missingKey: "請設定 VITE_GOOGLE_MAPS_API_KEY 以顯示地圖",
