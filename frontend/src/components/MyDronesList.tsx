@@ -24,6 +24,9 @@ import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 
+/* Store the key, not translated text, so the message follows a language switch. */
+type DeleteError = { key: "deleteBlocked" | "deleteFailed" } | { message: string };
+
 interface MyDronesListProps {
   /** 當此值變動時會重新取得無人機列表（例如任務開始/取消/完成後，管理區塊的「待命/飛行中」會同步） */
   refreshTrigger?: string;
@@ -43,7 +46,7 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
   const [savingEdit, setSavingEdit] = useState(false);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<DeleteError | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const loadDrones = () => {
@@ -111,9 +114,9 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
       .catch((e) => {
         const err = e as ApiError;
         if (err.status === 409) {
-          setDeleteError(err.detail ?? t("drones.deleteBlocked"));
+          setDeleteError(err.detail ? { message: err.detail } : { key: "deleteBlocked" });
         } else {
-          setDeleteError(t("drones.deleteFailed"));
+          setDeleteError({ key: "deleteFailed" });
         }
       })
       .finally(() => setDeleting(false));
@@ -290,7 +293,9 @@ export default function MyDronesList({ refreshTrigger }: MyDronesListProps) {
             <AlertDialogDescription>
               {t("drones.deleteDialogDescription")}
               {deleteError != null && (
-                <span className="mt-2 block text-destructive-text">{deleteError}</span>
+                <span className="mt-2 block text-destructive-text">
+                  {"key" in deleteError ? t(`drones.${deleteError.key}`) : deleteError.message}
+                </span>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -9,6 +9,10 @@ import { fetchDrones, type DroneResponse } from "@/api/drones";
 import { Panel, PanelHeader, PanelTitle } from "@/components/ui/panel";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
+import type { Messages } from "@/locales/types";
+
+/* Store the key, not translated text, so the message follows a language switch. */
+type FormError = { key: keyof Messages["taskForm"]["errors"] } | { message: string };
 
 export interface TaskCreateFormProps {
   /** 建議起點（可選，例如上一任務終點），用於需要填起點時預填或提示 */
@@ -61,7 +65,7 @@ export default function TaskCreateForm({
   const [isLocatingDestination, setIsLocatingDestination] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<FormError | null>(null);
 
   useEffect(() => {
     fetchDrones().then(setDrones).catch(() => setDrones([]));
@@ -129,15 +133,15 @@ export default function TaskCreateForm({
     setError(null);
 
     if (validDroneIds.length === 0) {
-      setError(t("taskForm.errors.noDrone"));
+      setError({ key: "noDrone" });
       return;
     }
     if (needStartInput && !confirmedStart) {
-      setError(t("taskForm.errors.noStart"));
+      setError({ key: "noStart" });
       return;
     }
     if (!confirmedDestination) {
-      setError(t("taskForm.errors.noDestination"));
+      setError({ key: "noDestination" });
       return;
     }
 
@@ -149,7 +153,7 @@ export default function TaskCreateForm({
           ? { lat: d.last_lat, lng: d.last_lng }
           : confirmedStart;
       if (!start) {
-        setError(t("taskForm.errors.startMissing"));
+        setError({ key: "startMissing" });
         return;
       }
       assignments.push(makeAssignment(drone_id, start, confirmedDestination!));
@@ -171,7 +175,7 @@ export default function TaskCreateForm({
         onSuccess?.();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("taskForm.errors.createFailed"));
+      setError(err instanceof Error ? { message: err.message } : { key: "createFailed" });
     } finally {
       setSubmitting(false);
     }
@@ -345,7 +349,11 @@ export default function TaskCreateForm({
           )}
         </div>
 
-        {error && <p className="text-[11px] text-destructive-text">{error}</p>}
+        {error && (
+          <p className="text-[11px] text-destructive-text">
+            {"key" in error ? t(`taskForm.errors.${error.key}`) : error.message}
+          </p>
+        )}
         <Button
           type="submit"
           size="sm"

@@ -2,10 +2,13 @@ import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { SUPPORTED_LANGUAGES, type Language } from "@/i18n";
 
-/* Native names, so each option is readable no matter which language is active. */
-const LANGUAGE_LABEL: Record<Language, string> = {
-  en: "EN",
-  "zh-TW": "繁中",
+/*
+ * Shown in their own language so each option is readable whichever language
+ * is active. `name` is announced by screen readers instead of the short label.
+ */
+const LANGUAGE_LABEL: Record<Language, { short: string; name: string }> = {
+  en: { short: "EN", name: "English" },
+  "zh-TW": { short: "繁中", name: "繁體中文" },
 };
 
 export default function LanguageSwitcher() {
@@ -25,6 +28,8 @@ export default function LanguageSwitcher() {
             type="button"
             lang={language}
             aria-pressed={active}
+            aria-label={LANGUAGE_LABEL[language].name}
+            title={LANGUAGE_LABEL[language].name}
             onClick={() => i18n.changeLanguage(language)}
             className={cn(
               "rounded-sm px-2 py-0.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -33,7 +38,7 @@ export default function LanguageSwitcher() {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {LANGUAGE_LABEL[language]}
+            {LANGUAGE_LABEL[language].short}
           </button>
         );
       })}
