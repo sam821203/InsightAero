@@ -6,6 +6,9 @@
 export const queryKeys = {
   tasks: {
     all: ["tasks"] as const,
+    list: (params: { limit?: number }) => ["tasks", "list", params] as const,
+    detail: (taskId: number) => ["tasks", "detail", taskId] as const,
+    report: (taskId: number) => ["tasks", "report", taskId] as const,
   },
   drones: {
     all: ["drones"] as const,

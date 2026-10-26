@@ -28,7 +28,7 @@ export function useTelemetryConnection() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const { ingest, setConnection, clearPathsAndIdle } = useTelemetryStore.getState();
+    const { ingest, setConnection, clearPaths } = useTelemetryStore.getState();
     let socket: WebSocket | null = null;
     let retryTimer: number | undefined;
     let attempt = 0;
@@ -71,7 +71,7 @@ export function useTelemetryConnection() {
         if (data.event === "arrived") {
           // Apply queued packets first so they don't re-add a trail after clearing.
           if (queue.length > 0) flush();
-          clearPathsAndIdle();
+          clearPaths();
           if (typeof data.task_id === "number") {
             queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
           }

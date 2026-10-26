@@ -58,10 +58,10 @@ InsightAero/
 │       ├── api/              # shared: fetch client, query keys, data read by several features
 │       ├── components/       # shared components; ui/ = primitives, layouts/ = header, sidebar
 │       ├── contexts/         # theme context
-│       ├── hooks/            # shared hooks: useTasks, telemetry connection, user location
+│       ├── hooks/            # shared hooks: telemetry connection, user location
 │       ├── i18n/ locales/    # react-i18next setup, en + zh-TW messages
 │       ├── lib/              # react-query config, map style, tokens bridge, formatting
-│       ├── stores/           # Zustand: telemetryStore, uiStore
+│       ├── stores/           # Zustand: telemetry-store (live WebSocket data)
 │       ├── styles/tokens/    # two-layer design tokens (primitives → semantic)
 │       ├── types/
 │       └── utils/
@@ -271,13 +271,13 @@ flowchart TB
     Map[GoogleMapView]
     HUD[TelemetryHUD]
     AI[AIDiagnosticPanel]
-    Tasks[TaskList / TaskCreateForm]
+    Tasks[features/missions]
     Drones[features/fleet]
     Sessions[features/flight-history]
   end
   subgraph Data
-    hooks[useDrones, useTasks, useTelemetry, useDroneMap]
-    stores[telemetryStore, uiStore]
+    hooks[shared queries: useTasks, useDrones]
+    stores[telemetry-store]
     api[drones, tasks, simulation, flightSessions, diagnose]
   end
   main --> App

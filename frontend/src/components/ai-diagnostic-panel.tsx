@@ -9,10 +9,10 @@ import type { ApiError } from "@/api/client";
 import {
   selectActiveTelemetry,
   selectHasLiveTelemetry,
-  selectIsRunning,
   useTelemetryStore,
 } from "@/stores/telemetry-store";
 import { useTranslation } from "react-i18next";
+import { useMissionInFlight } from "@/api/tasks.queries";
 import { formatClockTime } from "@/lib/format";
 import type { Messages } from "@/locales/types";
 
@@ -99,7 +99,8 @@ interface Props {
 
 export default function AIDiagnosticPanel({ hideTitle }: Props) {
   const { t, i18n } = useTranslation();
-  const isRunning = useTelemetryStore(selectIsRunning);
+  // Derived from the mission list (shared query), not copied into a store.
+  const isRunning = useMissionInFlight();
   const canDiagnose = useTelemetryStore(selectHasLiveTelemetry);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isDiagnosing, setIsDiagnosing] = useState(false);

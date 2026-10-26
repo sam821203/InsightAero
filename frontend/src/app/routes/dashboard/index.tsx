@@ -1,84 +1,45 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
+import { useTranslation } from "react-i18next";
 import { useTelemetryConnection } from "@/hooks/use-telemetry-connection";
 import { liveDroneIdsOf, useTelemetryStore } from "@/stores/telemetry-store";
 import { useUserLocation, FALLBACK_CENTER } from "@/hooks/use-user-location";
 import { useDrones } from "@/api/drones.queries";
-import { useUIStore } from "@/stores/ui-store";
+import { useTasks } from "@/api/tasks.queries";
+import { isBackendUnreachable } from "@/api/client";
+import { isActiveTask } from "@/utils/task-status";
 import LiveMapView from "@/components/live-map-view";
 import TelemetryHUD from "@/components/telemetry-hud";
 import AIFloatingNavigator from "@/components/ai-floating-navigator";
-import TaskList from "@/components/task-list";
-import TaskDetailDialog from "@/components/task-detail-dialog";
-import TaskCreateForm from "@/components/task-create-form";
-import { Button } from "@/components/ui/button";
-import { PanelHeader } from "@/components/ui/panel";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Plus } from "lucide-react";
-import type { FlightPathPoint } from "@/types/telemetry";
-import type { TaskItem } from "@/types/task";
-import { useTasks } from "@/hooks/use-tasks";
-import { useTranslation } from "react-i18next";
-import AppHeader from "@/components/layouts/app-header";
-import PageLoader from "@/components/layouts/page-loader";
-import DashboardSidebar, { type SidebarTab } from "./dashboard-sidebar";
 import ConnectionIndicator from "@/components/connection-indicator";
 import BackendStatusBanner from "@/components/backend-status-banner";
-import { isBackendUnreachable } from "@/api/client";
+import AppHeader from "@/components/layouts/app-header";
+import PageLoader from "@/components/layouts/page-loader";
+import MissionsPanel from "@/features/missions/components/missions-panel";
+import { useMissionStatusSync } from "@/features/missions/hooks/use-mission-status-sync";
+import type { FlightPathPoint } from "@/types/telemetry";
+import DashboardSidebar, { type SidebarTab } from "./dashboard-sidebar";
 
-const ACTIVE_TASK_STATUSES = ["pending", "starting", "running", "paused"] as const;
-
-function isActiveTask(task: TaskItem): boolean {
-  return (ACTIVE_TASK_STATUSES as readonly string[]).includes(task.status);
-}
-
+/**
+ * The dashboard composes features: it reads the shared mission and drone
+ * lists, derives what the map needs, and passes data between features
+ * (e.g. the selected flight path from history to the map).
+ */
 export default function DashboardRoute() {
   const { t } = useTranslation();
   const [historyPath, setHistoryPath] = useState<FlightPathPoint[] | null>(null);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>("missions");
-  const [createOpen, setCreateOpen] = useState(false);
-  const [lastEndPoint, setLastEndPoint] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-
-  const {
-    selectedTaskId,
-    setSelectedTaskId,
-    addressErrorOpen,
-    setAddressErrorOpen,
-    pageLoading,
-    setPageLoading,
-  } = useUIStore();
+  const [pageLoading, setPageLoading] = useState(true);
 
   const {
     tasks,
+    loaded: tasksLoaded,
     loading: tasksLoading,
     loadError: tasksLoadError,
     refetching: tasksRefetching,
-    fetchTasks,
-    createTask,
-    startTask,
-    pauseTask,
-    resumeTask,
-    cancelTask,
-    deleteTask,
-  } = useTasks({ limit: 30 });
+    refetch: refetchTasks,
+  } = useTasks();
+  useMissionStatusSync(tasks, tasksLoaded);
 
   const { drones: dronesForMap, loading: dronesApiLoading } = useDrones();
 
@@ -88,70 +49,12 @@ export default function DashboardRoute() {
   // array stable while the set of drones stays the same.
   const droneIds = useTelemetryStore(useShallow((s) => liveDroneIdsOf(s.byDrone)));
   const selectedDroneId = useTelemetryStore((s) => s.selectedDroneId);
-  const setRunState = useTelemetryStore((s) => s.setRunState);
-  const clearPathsAndIdle = useTelemetryStore((s) => s.clearPathsAndIdle);
+  const clearPaths = useTelemetryStore((s) => s.clearPaths);
   const { location: userLocation, isLoading: locationLoading } = useUserLocation();
-
-  /** Sync runState from API task list so after refresh we show running/paused correctly; only when tasks have loaded to avoid resetting to idle too early. */
-  useEffect(() => {
-    if (tasksLoading) return;
-    const hasRunning = tasks.some((t) => t.status === "running");
-    const hasPaused = tasks.some((t) => t.status === "paused");
-    if (hasRunning) setRunState("running");
-    else if (hasPaused) setRunState("paused");
-    else setRunState("idle");
-  }, [tasks, tasksLoading, setRunState]);
-
-  const handleStartTask = useCallback(
-    async (taskId: number) => {
-      const ok = await startTask(taskId);
-      if (ok) setRunState("running");
-    },
-    [startTask, setRunState]
-  );
-
-  const handleCancelTask = useCallback(
-    async (taskId: number) => {
-      const ok = await cancelTask(taskId);
-      if (ok) clearPathsAndIdle();
-    },
-    [cancelTask, clearPathsAndIdle]
-  );
-
-  const handleDeleteTask = useCallback(
-    async (taskId: number) => {
-      const ok = await deleteTask(taskId);
-      if (ok) clearPathsAndIdle();
-    },
-    [deleteTask, clearPathsAndIdle]
-  );
-
-  useEffect(() => {
-    const completed = tasks.filter((t) => t.status === "completed");
-    if (completed.length === 0) return;
-    const latest = completed.sort(
-      (a, b) =>
-        new Date(b.updated_at ?? b.created_at ?? 0).getTime() -
-        new Date(a.updated_at ?? a.created_at ?? 0).getTime()
-    )[0];
-    const firstAssignment = latest.assignments?.[0];
-    if (firstAssignment) {
-      setLastEndPoint({ lat: firstAssignment.dest_lat, lng: firstAssignment.dest_lng });
-    }
-  }, [tasks]);
 
   const activeTasks = useMemo(
     () => tasks.filter(isActiveTask),
     [tasks]
-  );
-
-  /** 已被進行中任務占用的無人機 ID，建立任務表單應排除這些無人機避免重複指派 */
-  const droneIdsInActiveTasks = useMemo(
-    () =>
-      new Set(
-        activeTasks.flatMap((t) => (t.assignments ?? []).map((a) => a.drone_id))
-      ),
-    [activeTasks]
   );
 
   /** 有任務在跑或已有即時遙測（地圖用：決定是否顯示多機／跟隨模式） */
@@ -291,76 +194,19 @@ export default function DashboardRoute() {
           activeMissionCount={activeTasks.length}
           onSelectFlightPath={setHistoryPath}
           missions={
-            <>
-              <PanelHeader>
-                <span className="text-xs text-muted-foreground">
-                  {tasks.length > 0 || (!tasksLoading && !tasksLoadError)
-                    ? t("sidebar.activeCount", { count: activeTasks.length })
-                    : null}
-                </span>
-                <Button size="sm" className="h-7 gap-1 px-2.5 text-xs" onClick={() => setCreateOpen(true)}>
-                  <Plus className="h-3.5 w-3.5" aria-hidden />
-                  {t("taskForm.title")}
-                </Button>
-              </PanelHeader>
-              <TaskList
-                className="flex-1"
-                tasks={tasks}
-                onStart={handleStartTask}
-                onPause={pauseTask}
-                onResume={resumeTask}
-                onCancel={handleCancelTask}
-                onDelete={handleDeleteTask}
-                onTaskClick={(id) => setSelectedTaskId(id)}
-                loading={tasksLoading}
-                loadError={tasksLoadError}
-                onRetry={() => fetchTasks()}
-                retrying={tasksRefetching}
-                onCreate={() => setCreateOpen(true)}
-              />
-            </>
+            <MissionsPanel
+              className="flex min-h-0 flex-1 flex-col"
+              tasks={tasks}
+              loading={tasksLoading}
+              loadError={tasksLoadError}
+              refetching={tasksRefetching}
+              onRetry={() => refetchTasks()}
+              onMissionEnded={clearPaths}
+            />
           }
         />
       </div>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("taskForm.title")}</DialogTitle>
-            <DialogDescription>{t("taskForm.description")}</DialogDescription>
-          </DialogHeader>
-          <TaskCreateForm
-            effectiveStart={lastEndPoint}
-            onCreate={createTask}
-            onSuccess={() => {
-              setCreateOpen(false);
-              setSidebarTab("missions");
-            }}
-            onAddressError={() => setAddressErrorOpen(true)}
-            excludeDroneIds={droneIdsInActiveTasks}
-          />
-        </DialogContent>
-      </Dialog>
-      <TaskDetailDialog
-        open={selectedTaskId != null}
-        onOpenChange={(open) => !open && setSelectedTaskId(null)}
-        taskId={selectedTaskId}
-      />
-      <AlertDialog open={addressErrorOpen} onOpenChange={setAddressErrorOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("addressError.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("addressError.description")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setAddressErrorOpen(false)}>
-              {t("common.confirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { apiFetch } from "./client";
-import type { TaskItem, TaskCreateBody } from "@/types/task";
+import { apiFetch } from "@/api/client";
+import type { TaskCreateBody, TaskItem } from "@/types/task";
 
 export interface TaskReportResponse {
   status: "pending" | "completed" | "failed";
@@ -11,30 +11,22 @@ export interface TaskReportResponse {
 
 const TASKS_BASE = "/api/tasks";
 
-export async function fetchTask(taskId: number): Promise<TaskItem> {
+export function getTask(taskId: number): Promise<TaskItem> {
   return apiFetch<TaskItem>(`${TASKS_BASE}/${taskId}`);
 }
 
-export async function fetchTaskReport(
-  taskId: number
-): Promise<TaskReportResponse> {
+export function getTaskReport(taskId: number): Promise<TaskReportResponse> {
   return apiFetch<TaskReportResponse>(`${TASKS_BASE}/${taskId}/report`);
 }
 
-export async function fetchTasks(params?: {
-  status?: string;
-  limit?: number;
-  offset?: number;
-}): Promise<TaskItem[]> {
-  const searchParams: Record<string, string | number | undefined> = {};
-  if (params?.status) searchParams.status = params.status;
-  if (params?.limit != null) searchParams.limit = params.limit;
-  if (params?.offset != null) searchParams.offset = params.offset;
-  const data = await apiFetch<TaskItem[]>(TASKS_BASE, { params: searchParams });
-  return Array.isArray(data) ? data : [];
+/** The backend answers the report request with this detail until the report exists. */
+const NO_REPORT_YET = "No report yet";
+
+export function isNoReportYet(error: unknown): boolean {
+  return error instanceof Error && error.message === NO_REPORT_YET;
 }
 
-export async function createTask(body: TaskCreateBody): Promise<TaskItem> {
+export function createTask(body: TaskCreateBody): Promise<TaskItem> {
   return apiFetch<TaskItem>(TASKS_BASE, {
     method: "POST",
     body: JSON.stringify(body),
