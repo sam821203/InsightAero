@@ -34,7 +34,7 @@ For each function: the normal case, boundaries (zero wind, zero distance, empty 
 
 From `backend/`: `python -m pytest -q`. If dependencies aren't installed, try `pip install -r requirements-dev.txt` once; if that fails, report it.
 
-Never weaken or delete an existing test to get green. If a new test fails because the code looks wrong, keep the test, mark it `@pytest.mark.xfail(reason="...")`, and report the suspected bug.
+Never weaken or delete an existing test to get green. If a new test fails because the code looks wrong, keep the test, mark it `@pytest.mark.xfail(reason="...", strict=True)` so the run fails once the bug is fixed and the marker gets removed, and report the suspected bug.
 
 ## Output
 

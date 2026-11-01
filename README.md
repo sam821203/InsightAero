@@ -373,10 +373,18 @@ The UI uses a dark theme with **Orbitron** / **JetBrains Mono** fonts, cyan acce
 
 ## Claude Code subagents
 
-`.claude/agents/` holds project subagents for [Claude Code](https://docs.claude.com/en/docs/claude-code/sub-agents). Claude picks them up automatically, or you can ask for one by name ("use the frontend-reviewer").
+`.claude/agents/` holds project subagents for [Claude Code](https://docs.claude.com/en/docs/claude-code/sub-agents). Claude picks them up automatically, or you can ask for one by name ("use the realtime-perf-reviewer").
 
-| Agent | Use it for |
-|-------|------------|
-| `frontend-reviewer` | Reviewing frontend changes against `features/README.md`, the design-token rules and i18n rules; runs `lint:tokens`, `lint:filenames` and the type check. Read-only. |
-| `backend-test-writer` | Writing and running pytest tests for `backend/app/services` (wind compensation, battery planning, weather math) in the existing test style. |
-| `i18n-translator` | Moving hard-coded UI text into `en.ts` and adding matching Traditional Chinese (Taiwan) text to `zh-TW.ts`. |
+| Agent | Use it for | Edits files |
+|-------|------------|-------------|
+| `realtime-perf-reviewer` | The live telemetry path: Zustand selectors, map marker and trail updates, WebSocket reconnect and cleanup, per-packet render cost. | No |
+| `api-contract-checker` | Pydantic schemas, routes and WebSocket packets in `backend/` against the TypeScript types and `*.api.ts` files in `frontend/`: fields, types, nullability, enum values. | No |
+| `ui-consistency-reviewer` | Design-token misuse, hard-coded colors, rebuilt `components/ui` primitives, light/dark issues, Radix accessibility. Runs `lint:tokens`. | No |
+| `feature-boundary-guard` | Where code lives: import direction, cross-feature imports, shared vs feature `api/`, state placement, as in `features/README.md`. Runs `lint:filenames`. | No |
+| `ai-output-handler-reviewer` | AI diagnosis, navigator and mission reports: timeouts, fallbacks, loading and error states, stale results, safe rendering. | No |
+| `backend-test-writer` | Writing and running pytest tests for `backend/app/services` and, where the database can be faked, `backend/app/api`. | Yes (tests) |
+| `i18n-translator` | Moving hard-coded UI text into `en.ts` and writing the Traditional Chinese (Taiwan) copy in `zh-TW.ts`. | Yes (locales, components) |
+
+The reviewers are read-only by instruction: they have `Bash` so they can run git, grep and the lint scripts, and their prompts forbid changing anything. This is guidance, not an enforced sandbox.
+
+Checks with a clear right answer (token lint, file names, the en/zh-TW key match enforced by TypeScript) stay as scripts; the agents cover the parts that need judgment.

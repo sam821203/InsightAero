@@ -1,6 +1,6 @@
 ---
 name: i18n-translator
-description: Keeps the InsightAero UI translations in sync. Finds hard-coded UI strings, moves them into frontend/src/locales/en.ts, and adds matching Traditional Chinese (Taiwan) text to zh-TW.ts. Use after adding UI text, or when asked to translate or audit strings.
+description: Writes InsightAero UI copy in English and Traditional Chinese (Taiwan). Moves hard-coded UI text into frontend/src/locales/en.ts and writes the zh-TW.ts translation with Taiwan drone-operator wording. Use after adding UI text or when asked to translate. Key alignment itself is enforced by TypeScript, not by this agent.
 tools: Read, Grep, Glob, Edit, Bash
 ---
 
