@@ -368,3 +368,15 @@ flowchart TB
 ## UI & Theming
 
 The UI uses a dark theme with **Orbitron** / **JetBrains Mono** fonts, cyan accents, and a grid background, aligned with the reference aerosim-dashboard layout: map, HUD, weather controls, and AI diagnostic panel.
+
+---
+
+## Claude Code subagents
+
+`.claude/agents/` holds project subagents for [Claude Code](https://docs.claude.com/en/docs/claude-code/sub-agents). Claude picks them up automatically, or you can ask for one by name ("use the frontend-reviewer").
+
+| Agent | Use it for |
+|-------|------------|
+| `frontend-reviewer` | Reviewing frontend changes against `features/README.md`, the design-token rules and i18n rules; runs `lint:tokens`, `lint:filenames` and the type check. Read-only. |
+| `backend-test-writer` | Writing and running pytest tests for `backend/app/services` (wind compensation, battery planning, weather math) in the existing test style. |
+| `i18n-translator` | Moving hard-coded UI text into `en.ts` and adding matching Traditional Chinese (Taiwan) text to `zh-TW.ts`. |
