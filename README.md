@@ -160,20 +160,20 @@ This starts the backend in the background and the frontend in the foreground; Ct
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | **Yes** | PostgreSQL connection string (e.g. Neon). Use `postgresql+asyncpg://user:password@host/dbname?sslmode=require` for async. |
-| `OPENWEATHER_API_KEY` | OpenWeather API key for wind speed/direction. |
-| `OPENAI_API_KEY` | Used by LangChain for mission diagnosis and closing reports. |
-| `GOOGLE_MAPS_API_KEY` | Backend env diagnosis (Elevation API); enable in Cloud Console if used. |
-| `CORS_ORIGINS` | Comma-separated origins (e.g. `http://localhost:5173`). Empty ⇒ `*` and no credentials. |
-| `DB_USE_SSL` | `true` / `false`; use `true` for Neon, `false` for local Postgres. |
-| `SIM_LAT`, `SIM_LNG` | Simulation origin (default: Taipei). |
+| `OPENWEATHER_API_KEY` | No | OpenWeather API key for wind speed/direction. |
+| `OPENAI_API_KEY` | No | Used by LangChain for mission diagnosis and closing reports. |
+| `GOOGLE_MAPS_API_KEY` | No | Backend env diagnosis (Elevation API); enable in Cloud Console if used. |
+| `CORS_ORIGINS` | No | Comma-separated origins (e.g. `http://localhost:5173`). Empty ⇒ `*` and no credentials. |
+| `DB_USE_SSL` | No | `true` / `false`; use `true` for Neon, `false` for local Postgres. |
+| `SIM_LAT`, `SIM_LNG` | No | Simulation origin (default: Taipei). |
 
 ### Frontend (`frontend/.env.local` or build-time env)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `VITE_GOOGLE_MAPS_API_KEY` | **Yes** | Google Maps JavaScript API key (map won’t load without it). |
-| `VITE_API_URL` | Backend base URL; dev defaults to Vite proxy. **Set for production** so API calls hit the correct host. |
-| `VITE_WS_BASE_URL` | WebSocket URL; derived from `VITE_API_URL` if unset. |
+| `VITE_API_URL` | No | Backend base URL; dev defaults to Vite proxy. **Set for production** so API calls hit the correct host. |
+| `VITE_WS_BASE_URL` | No | WebSocket URL; derived from `VITE_API_URL` if unset. |
 
 ---
 
@@ -368,7 +368,6 @@ flowchart TB
 ## UI & Theming
 
 The UI uses a dark theme with **Orbitron** / **JetBrains Mono** fonts, cyan accents, and a grid background, aligned with the reference aerosim-dashboard layout: map, HUD, weather controls, and AI diagnostic panel.
-
 ---
 
 ## Claude Code subagents
