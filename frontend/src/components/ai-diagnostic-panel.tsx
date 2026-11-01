@@ -50,6 +50,8 @@ const STATUS_MESSAGES = [
   "statusNavigation",
 ] as const satisfies readonly AiLogKey[];
 
+// Not called right now; kept for the automatic telemetry log.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function generateInsight(t: TelemetryPacket, prev: TelemetryPacket | null): Omit<LogEntry, "id" | "timestamp"> {
   if (t.battery < 15) {
     return {
@@ -104,6 +106,7 @@ export default function AIDiagnosticPanel({ hideTitle }: Props) {
   const canDiagnose = useTelemetryStore(selectHasLiveTelemetry);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isDiagnosing, setIsDiagnosing] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const prevRef = useRef<TelemetryPacket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const tickRef = useRef(0);
