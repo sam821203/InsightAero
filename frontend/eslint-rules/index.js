@@ -3,27 +3,29 @@
  * @eslint/css, on CSS. See src/styles/tokens/README.md and src/features/README.md.
  */
 import { readFileSync } from "node:fs";
-import { basename, relative, sep } from "node:path";
+import { basename, join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("..", import.meta.url).pathname;
-const TOKENS = `${ROOT}src/styles/tokens`;
+const ROOT = fileURLToPath(new URL("..", import.meta.url));
+const SRC = join(ROOT, "src");
+const TOKENS = join(SRC, "styles", "tokens");
+
+/* Blank out CSS comments but keep offsets, so locations stay right. */
+const cssWithoutComments = (text) => text.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, " "));
 
 const namesIn = (file) =>
-  new Set([...readFileSync(file, "utf8").matchAll(/--([a-z0-9-]+):/g)].map((m) => m[1]));
+  new Set([...cssWithoutComments(readFileSync(file, "utf8")).matchAll(/--([a-z0-9-]+):/g)].map((m) => m[1]));
 
 let tokenNames;
 function tokens() {
   tokenNames ??= {
-    primitive: namesIn(`${TOKENS}/primitives.css`),
-    semantic: namesIn(`${TOKENS}/semantic.css`),
+    primitive: namesIn(join(TOKENS, "primitives.css")),
+    semantic: namesIn(join(TOKENS, "semantic.css")),
   };
   return tokenNames;
 }
 
 const TOKEN_HELPERS = new Set(["token", "readColorToken", "readHexToken"]);
-
-/* Blank out CSS comments but keep offsets, so locations stay right. */
-const cssWithoutComments = (text) => text.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, " "));
 
 function cssVarRefs(sourceCode, onRef) {
   const text = cssWithoutComments(sourceCode.text);
@@ -110,7 +112,7 @@ const kebabCaseFilenames = {
   },
   create(context) {
     const check = (node) => {
-      const parts = relative(`${ROOT}src`, context.filename).split(sep);
+      const parts = relative(SRC, context.filename).split(sep);
       if (parts[0] === ".." || KEBAB_EXEMPT.has(basename(context.filename))) return;
       const bad = parts.find((name) => !KEBAB.test(name));
       if (bad) {

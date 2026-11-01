@@ -50,7 +50,7 @@ const importZones = [
 
 const hardCodedColor = "hard-coded color; use a semantic token (src/styles/tokens/README.md).";
 const hexStart = "/^#[0-9a-fA-F]{3,8}\\b/";
-const colorFunction = "/\\b(rgba?|hsla?)\\(\\s*\\d/";
+const colorFunction = "/\\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch)\\(\\s*[\\d.]/";
 
 export default defineConfig(
   { ignores: ["dist", "node_modules"] },
