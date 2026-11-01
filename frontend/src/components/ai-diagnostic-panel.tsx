@@ -43,6 +43,57 @@ function toSnapshot(t: TelemetryPacket): Record<string, number> {
   };
 }
 
+const STATUS_MESSAGES = [
+  "statusStable",
+  "statusTelemetry",
+  "statusWind",
+  "statusNavigation",
+] as const satisfies readonly AiLogKey[];
+
+// Not called right now; kept for the automatic telemetry log.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function generateInsight(t: TelemetryPacket, prev: TelemetryPacket | null): Omit<LogEntry, "id" | "timestamp"> {
+  if (t.battery < 15) {
+    return {
+      type: "warning",
+      content: { key: "batteryCritical", params: { battery: t.battery.toFixed(1) } },
+    };
+  }
+  if (t.battery < 30 && (!prev || prev.battery >= 30)) {
+    return {
+      type: "warning",
+      content: { key: t.wind_speed > 20 ? "batteryLowHighWind" : "batteryLow" },
+    };
+  }
+  if (t.effective_speed_m_min < 300) {
+    return {
+      type: "warning",
+      content: { key: "headwindSlowdown", params: { speed: t.effective_speed_m_min } },
+    };
+  }
+  if (t.wind_speed > 35) {
+    return {
+      type: "warning",
+      content: { key: "windExceeded", params: { wind: t.wind_speed } },
+    };
+  }
+
+  const key = STATUS_MESSAGES[Math.floor(Math.random() * STATUS_MESSAGES.length)];
+  return {
+    type: "status",
+    content: {
+      key,
+      params: {
+        lat: t.lat.toFixed(4),
+        lng: t.lng.toFixed(4),
+        alt: t.alt,
+        heading: t.heading.toFixed(1),
+        speed: t.effective_speed_m_min,
+      },
+    },
+  };
+}
+
 interface Props {
   /** 隱藏標題列（用於嵌入浮動 dialog 時，標題已在 dialog header 顯示） */
   hideTitle?: boolean;
@@ -55,6 +106,8 @@ export default function AIDiagnosticPanel({ hideTitle }: Props) {
   const canDiagnose = useTelemetryStore(selectHasLiveTelemetry);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isDiagnosing, setIsDiagnosing] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const prevRef = useRef<TelemetryPacket | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const tickRef = useRef(0);
 
