@@ -160,20 +160,20 @@ This starts the backend in the background and the frontend in the foreground; Ct
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `DATABASE_URL` | **Yes** | PostgreSQL connection string (e.g. Neon). Use `postgresql+asyncpg://user:password@host/dbname?sslmode=require` for async. |
-| `OPENWEATHER_API_KEY` | No | OpenWeather API key for wind speed/direction. |
-| `OPENAI_API_KEY` | No | Used by LangChain for mission diagnosis and closing reports. |
-| `GOOGLE_MAPS_API_KEY` | No | Backend env diagnosis (Elevation API); enable in Cloud Console if used. |
-| `CORS_ORIGINS` | No | Comma-separated origins (e.g. `http://localhost:5173`). Empty ⇒ `*` and no credentials. |
-| `DB_USE_SSL` | No | `true` / `false`; use `true` for Neon, `false` for local Postgres. |
-| `SIM_LAT`, `SIM_LNG` | No | Simulation origin (default: Taipei). |
+| `OPENWEATHER_API_KEY` | OpenWeather API key for wind speed/direction. |
+| `OPENAI_API_KEY` | Used by LangChain for mission diagnosis and closing reports. |
+| `GOOGLE_MAPS_API_KEY` | Backend env diagnosis (Elevation API); enable in Cloud Console if used. |
+| `CORS_ORIGINS` | Comma-separated origins (e.g. `http://localhost:5173`). Empty ⇒ `*` and no credentials. |
+| `DB_USE_SSL` | `true` / `false`; use `true` for Neon, `false` for local Postgres. |
+| `SIM_LAT`, `SIM_LNG` | Simulation origin (default: Taipei). |
 
 ### Frontend (`frontend/.env.local` or build-time env)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `VITE_GOOGLE_MAPS_API_KEY` | **Yes** | Google Maps JavaScript API key (map won’t load without it). |
-| `VITE_API_URL` | No | Backend base URL; dev defaults to Vite proxy. **Set for production** so API calls hit the correct host. |
-| `VITE_WS_BASE_URL` | No | WebSocket URL; derived from `VITE_API_URL` if unset. |
+| `VITE_API_URL` | Backend base URL; dev defaults to Vite proxy. **Set for production** so API calls hit the correct host. |
+| `VITE_WS_BASE_URL` | WebSocket URL; derived from `VITE_API_URL` if unset. |
 
 ---
 
@@ -377,12 +377,11 @@ The UI uses a dark theme with **Orbitron** / **JetBrains Mono** fonts, cyan acce
 
 Shared instructions for every AI tool live in `AGENTS.md`; `CLAUDE.md` and `.cursor/rules/` only point to it and to the rule READMEs, so the team can use whichever tool they like.
 
-| Agent | Use it for | Edits files |
-|-------|------------|-------------|
-| `realtime-perf-reviewer` | The live telemetry path: Zustand selectors, map marker and trail updates, WebSocket reconnect and cleanup, per-packet render cost. | No |
-| `api-contract-checker` | Pydantic schemas, routes and WebSocket packets in `backend/` against the TypeScript types and `*.api.ts` files in `frontend/`: fields, types, nullability, enum values. | No |
-| `backend-test-writer` | Writing and running pytest tests for `backend/app/services` and, where the database can be faked, `backend/app/api`. | Yes (tests) |
+| Agent | Use it for |
+|-------|------------|
+| `realtime-perf-reviewer` | The live telemetry path: Zustand selectors, map marker and trail updates, WebSocket reconnect and cleanup, per-packet render cost. |
+| `api-contract-checker` | Pydantic schemas, routes and WebSocket packets in `backend/` against the TypeScript types and `*.api.ts` files in `frontend/`: fields, types, nullability, enum values. |
 
-The two reviewers only get `Read`, `Grep` and `Glob`, so they can't change files or run commands; the main session runs the scripts. Each agent sets a `model` that fits its task (Opus for the realtime review, Sonnet for the others). `.claude/settings.json` blocks `.env` access and destructive commands for every agent.
+Both agents only get `Read`, `Grep` and `Glob`, so they can't change files or run commands. The realtime review uses Opus; the contract check uses Sonnet. `.claude/settings.json` blocks `.env` access and destructive commands for every agent.
 
-Checks with a clear right answer (token lint, file names, the en/zh-TW key match enforced by TypeScript) stay as scripts; the agents cover the parts that need judgment.
+Instructions are kept to what an AI wouldn't do on its own, what no script catches, and what has gone wrong before. Checks with a clear right answer stay as scripts.
