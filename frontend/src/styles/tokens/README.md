@@ -29,7 +29,7 @@ Add a component layer later only if the components are extracted into a shared p
 5. **Numbers use tabular figures.** Live values get `tabular-nums` so digits do not shift as they update.
 6. **Sizes and spacing use Tailwind's scale** (`text-xs`, `p-3`). They are not duplicated as tokens.
 
-`npm run lint:tokens` enforces rules 1 and 2.
+`npm run lint` enforces rules 1 and 2 (see `eslint.config.js` and `eslint-rules/`).
 
 ## Recipes
 
@@ -289,7 +289,7 @@ First decide which case you are in:
 
 4. Use it: `text-restricted`, `border-restricted`, `bg-restricted/10`, or `readColorToken("color-restricted", theme)` for the map.
 
-5. Check contrast for any text use (4.5:1 against `--color-bg-surface` in both themes) and run `npm run lint:tokens`.
+5. Check contrast for any text use (4.5:1 against `--color-bg-surface` in both themes) and run `npm run lint`.
 
 ### Example: changing the brand color
 

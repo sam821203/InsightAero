@@ -268,7 +268,6 @@ export default function GoogleMapView({
   isRunning,
   lat,
   lng,
-  heading,
   flightPath,
   historyPath,
   origin,
@@ -364,6 +363,8 @@ export default function GoogleMapView({
       infoWindowRef.current = null;
       mapRef.current = null;
     };
+    // Creates the map once; later lat/lng changes move it in the effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -408,6 +409,7 @@ export default function GoogleMapView({
     };
   }, [isRunning, droneIds, telemetryByDrone, lastPositionByDrone, lat, lng]);
 
+  const droneIdsKey = droneIds.join(",");
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -490,12 +492,14 @@ export default function GoogleMapView({
         polylinesRef.current[id].setStyle(trailStyle(id));
       }
     });
+    // droneIds is a new array on every render, so droneIdsKey stands in for it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     telemetryByDrone,
     flightPathByDrone,
     selectedDroneId,
     isRunning,
-    droneIds.join(","),
+    droneIdsKey,
     lastPositionByDrone,
     theme,
     onDroneClick,
@@ -651,7 +655,6 @@ export default function GoogleMapView({
     const map = mapRef.current;
     if (map) {
       telemetryByDroneRef.current = telemetryByDrone;
-      const legacyT = telemetryByDrone[0];
       const legacyTrailStyle: TrailStyle = {
         color: readColorToken("color-map-route-active", themeRef.current),
         casingColor: readColorToken("color-map-route-casing", themeRef.current),

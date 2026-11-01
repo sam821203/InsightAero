@@ -23,6 +23,8 @@ Only add the folders a feature needs.
 - **Features don't import each other.** When two features need to work together,
   `app/` composes them (e.g. the dashboard passes the selected flight path from
   flight history to the map).
+  `npm run lint` enforces this rule and the one above
+  (`import-x/no-restricted-paths` in `eslint.config.js`).
 - **Data read by several features stays shared.** Drones are listed by fleet,
   missions and the map, so reading them (`api/drones.api.ts` + `api/drones.queries.ts`)
   is shared, while drone writes live in `features/fleet/api/`. The mission list
@@ -61,7 +63,7 @@ The shared `src/api/` folder uses the same pair, named after the resource
 All files and folders are kebab-case, as in bulletproof-react
 (`fleet-list.tsx`, `use-user-location.ts`). What a file exports keeps its
 normal casing (`export default function FleetList`, `export function useDrones`).
-`npm run lint:filenames` checks this.
+`npm run lint` checks this.
 
 ## Where state lives
 
