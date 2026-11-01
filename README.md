@@ -373,7 +373,7 @@ The UI uses a dark theme with **Orbitron** / **JetBrains Mono** fonts, cyan acce
 
 ## Claude Code subagents
 
-`.claude/agents/` holds project subagents for [Claude Code](https://docs.claude.com/en/docs/claude-code/sub-agents). Claude picks them up automatically, or you can ask for one by name ("use the realtime-perf-reviewer").
+`.claude/agents/` holds project subagents for [Claude Code](https://docs.claude.com/en/docs/claude-code/sub-agents). Claude picks them up automatically, or you can ask for one by name ("use the realtime-perf-reviewer"). `CLAUDE.md` lists which agent to use for which kind of change.
 
 | Agent | Use it for | Edits files |
 |-------|------------|-------------|
