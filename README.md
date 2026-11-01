@@ -387,6 +387,6 @@ Shared instructions for every AI tool live in `AGENTS.md`; `CLAUDE.md` and `.cur
 | `backend-test-writer` | Writing and running pytest tests for `backend/app/services` and, where the database can be faked, `backend/app/api`. | Yes (tests) |
 | `i18n-translator` | Moving hard-coded UI text into `en.ts` and writing the Traditional Chinese (Taiwan) copy in `zh-TW.ts`. | Yes (locales, components) |
 
-The reviewers are read-only by instruction: they have `Bash` so they can run git, grep and the lint scripts, and their prompts forbid changing anything. This is guidance, not an enforced sandbox.
+The five reviewers only get `Read`, `Grep` and `Glob`, so they can't change files or run commands; the main session runs the scripts. Each agent sets a `model` that fits its task (Opus for deep reviews, Sonnet for most, Haiku for the structure check). `.claude/settings.json` blocks `.env` access and destructive commands for every agent.
 
 Checks with a clear right answer (token lint, file names, the en/zh-TW key match enforced by TypeScript) stay as scripts; the agents cover the parts that need judgment.

@@ -4,7 +4,7 @@
 
 ## Subagents
 
-Project subagents live in `.claude/agents/`. Use them as below; when a change fits several rows, run the matching agents in parallel. The reviewers only report findings, so act on what they return.
+Project subagents live in `.claude/agents/`. Use them as below; when a change fits several rows, run the matching agents in parallel. The reviewers only report findings, so act on what they return. They have no shell, so pass them the list of changed files (from `git diff --name-only origin/main...HEAD`) and run the lint, type and test scripts yourself.
 
 | When | Use | What it does |
 | --- | --- | --- |
@@ -19,3 +19,7 @@ Project subagents live in `.claude/agents/`. Use them as below; when a change fi
 Before opening a PR, run each reviewer whose row matches the diff, fix what they report as must-fix, and mention anything left in the PR's Notes section.
 
 Don't use a subagent for checks that already have a script (`lint:tokens`, `lint:filenames`, `tsc`, `pytest`); run the script.
+
+## Safety settings
+
+`.claude/settings.json` applies to the main session and every subagent: it denies reading or editing real `.env` files and blocks destructive git and `rm -rf` commands, and a `PreToolUse` hook (`.claude/hooks/block-env.mjs`) stops shell commands that touch `.env` files. `.env.example` stays readable.
