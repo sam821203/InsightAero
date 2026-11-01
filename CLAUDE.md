@@ -12,7 +12,9 @@ Project subagents live in `.claude/agents/`. Use them as below; when a change fi
 | Changing `backend/app/schemas/`, `backend/app/api/`, the packets built in `services/simulator.py`, `frontend/src/types/`, or any `*.api.ts` file | `api-contract-checker` | Compares backend and frontend fields, types, nullability and status enums |
 | Adding or changing code in `backend/app/services/` or `backend/app/api/`, or asked to add tests | `backend-test-writer` | Writes and runs pytest tests in the existing style |
 
-Before opening a PR, run each reviewer whose row matches the diff, fix what they report as must-fix, and mention anything left in the PR's Notes section.
+When not to use them: if the question can be answered from one or two files, or the change is a few lines in one or two files (a renamed field, a copy fix, one new test), handle it directly. A subagent starts cold and re-reads everything, so it only pays off for wide reads, independent review of code you just wrote, or keeping a long session's context clean.
+
+Before opening a PR with a non-trivial diff, run each reviewer whose row matches it, fix what they report as must-fix, and mention anything left in the PR's Notes section.
 
 For structure, design tokens and UI text there is no subagent: follow the rule READMEs listed in `AGENTS.md` and run the scripts. Add a subagent only when a real need shows up.
 
