@@ -1,0 +1,8 @@
+---
+description: InsightAero commands and project rules (shared with other AI tools)
+alwaysApply: true
+---
+
+Follow `AGENTS.md` at the repo root: it lists the commands, the checks to run before committing, and the rule files for each area.
+
+@AGENTS.md

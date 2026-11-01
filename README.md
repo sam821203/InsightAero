@@ -375,6 +375,8 @@ The UI uses a dark theme with **Orbitron** / **JetBrains Mono** fonts, cyan acce
 
 `.claude/agents/` holds project subagents for [Claude Code](https://docs.claude.com/en/docs/claude-code/sub-agents). Claude picks them up automatically, or you can ask for one by name ("use the realtime-perf-reviewer"). `CLAUDE.md` lists which agent to use for which kind of change.
 
+Shared instructions for every AI tool live in `AGENTS.md`; `CLAUDE.md` and `.cursor/rules/` only point to it and to the rule READMEs, so the team can use whichever tool they like.
+
 | Agent | Use it for | Edits files |
 |-------|------------|-------------|
 | `realtime-perf-reviewer` | The live telemetry path: Zustand selectors, map marker and trail updates, WebSocket reconnect and cleanup, per-packet render cost. | No |

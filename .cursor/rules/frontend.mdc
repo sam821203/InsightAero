@@ -1,0 +1,13 @@
+---
+description: Frontend structure, design-token and translation rules
+globs: frontend/src/**
+alwaysApply: false
+---
+
+When editing the frontend, follow these files. They are the source of truth; don't restate them here.
+
+- Structure, import direction, API file pairs, where state lives, naming: @frontend/src/features/README.md
+- Colors, tokens, theming: @frontend/src/styles/tokens/README.md
+- Translations and UI copy: @frontend/src/locales/README.md
+
+Before finishing, run from `frontend/`: `npx tsc -p tsconfig.app.json`, `npm run lint:tokens`, `npm run lint:filenames`.
