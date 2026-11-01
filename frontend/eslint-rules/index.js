@@ -111,12 +111,12 @@ const kebabCaseFilenames = {
     schema: [],
   },
   create(context) {
-    const check = (node) => {
+    const check = () => {
       const parts = relative(SRC, context.filename).split(sep);
       if (parts[0] === ".." || KEBAB_EXEMPT.has(basename(context.filename))) return;
       const bad = parts.find((name) => !KEBAB.test(name));
       if (bad) {
-        context.report({ loc: { line: 1, column: 0 }, node, messageId: "notKebab", data: { name: bad } });
+        context.report({ loc: { line: 1, column: 0 }, messageId: "notKebab", data: { name: bad } });
       }
     };
     return { Program: check, StyleSheet: check };
