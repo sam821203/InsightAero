@@ -381,12 +381,8 @@ Shared instructions for every AI tool live in `AGENTS.md`; `CLAUDE.md` and `.cur
 |-------|------------|-------------|
 | `realtime-perf-reviewer` | The live telemetry path: Zustand selectors, map marker and trail updates, WebSocket reconnect and cleanup, per-packet render cost. | No |
 | `api-contract-checker` | Pydantic schemas, routes and WebSocket packets in `backend/` against the TypeScript types and `*.api.ts` files in `frontend/`: fields, types, nullability, enum values. | No |
-| `ui-consistency-reviewer` | Design-token misuse, hard-coded colors, rebuilt `components/ui` primitives, light/dark issues, Radix accessibility. Runs `lint:tokens`. | No |
-| `feature-boundary-guard` | Where code lives: import direction, cross-feature imports, shared vs feature `api/`, state placement, as in `features/README.md`. Runs `lint:filenames`. | No |
-| `ai-output-handler-reviewer` | AI diagnosis, navigator and mission reports: timeouts, fallbacks, loading and error states, stale results, safe rendering. | No |
 | `backend-test-writer` | Writing and running pytest tests for `backend/app/services` and, where the database can be faked, `backend/app/api`. | Yes (tests) |
-| `i18n-translator` | Moving hard-coded UI text into `en.ts` and writing the Traditional Chinese (Taiwan) copy in `zh-TW.ts`. | Yes (locales, components) |
 
-The five reviewers only get `Read`, `Grep` and `Glob`, so they can't change files or run commands; the main session runs the scripts. Each agent sets a `model` that fits its task (Opus for deep reviews, Sonnet for most, Haiku for the structure check). `.claude/settings.json` blocks `.env` access and destructive commands for every agent.
+The two reviewers only get `Read`, `Grep` and `Glob`, so they can't change files or run commands; the main session runs the scripts. Each agent sets a `model` that fits its task (Opus for the realtime review, Sonnet for the others). `.claude/settings.json` blocks `.env` access and destructive commands for every agent.
 
 Checks with a clear right answer (token lint, file names, the en/zh-TW key match enforced by TypeScript) stay as scripts; the agents cover the parts that need judgment.
