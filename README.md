@@ -368,3 +368,19 @@ flowchart TB
 ## UI & Theming
 
 The UI uses a dark theme with **Orbitron** / **JetBrains Mono** fonts, cyan accents, and a grid background, aligned with the reference aerosim-dashboard layout: map, HUD, weather controls, and AI diagnostic panel.
+---
+
+## Claude Code subagents
+
+`.claude/agents/` holds project subagents for [Claude Code](https://docs.claude.com/en/docs/claude-code/sub-agents). Claude picks them up automatically, or you can ask for one by name ("use the realtime-perf-reviewer"). `CLAUDE.md` lists which agent to use for which kind of change.
+
+Shared instructions for every AI tool live in `AGENTS.md`; `CLAUDE.md` and `.cursor/rules/` only point to it and to the rule READMEs, so the team can use whichever tool they like.
+
+| Agent | Use it for |
+|-------|------------|
+| `realtime-perf-reviewer` | The live telemetry path: Zustand selectors, map marker and trail updates, WebSocket reconnect and cleanup, per-packet render cost. |
+| `api-contract-checker` | Pydantic schemas, routes and WebSocket packets in `backend/` against the TypeScript types and `*.api.ts` files in `frontend/`: fields, types, nullability, enum values. |
+
+Both agents only get `Read`, `Grep` and `Glob`, so they can't change files or run commands. The realtime review uses Opus; the contract check uses Sonnet. `.claude/settings.json` blocks `.env` access and destructive commands for every agent.
+
+Instructions are kept to what an AI wouldn't do on its own, what no script catches, and what has gone wrong before. Checks with a clear right answer stay as scripts.
